@@ -295,6 +295,9 @@ angular.module('ngFormioHelper', ['formio', 'ui.router'])
                                 };
 
                                 $rootScope.$on('formio.sessionExpired', logoutError);
+                                $rootScope.$on('formio.unauthorized', function() {
+                                    $state.go(authState);
+                                });
 
                                 // Trigger when a logout occurs.
                                 $rootScope.logout = function() {
