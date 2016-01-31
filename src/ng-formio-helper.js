@@ -256,6 +256,8 @@ angular.module('ngFormioHelper', ['formio', 'ui.router'])
                                     else {
                                         $rootScope.user = null;
                                         localStorage.removeItem('formioAppUser');
+                                        localStorage.removeItem('formioUser');
+                                        localStorage.removeItem('formioToken');
                                     }
 
                                     if (!role) {
