@@ -4,7 +4,7 @@
   "authors": [
     "Travis Tidwell <travis@form.io>"
   ],
-  "description": "A library to help build Angluar.js applications on top of Form.io.",
+  "description": "A library to help build Angular.js applications on top of Form.io.",
   "keywords": [
     "formio"
   ],
