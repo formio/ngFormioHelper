@@ -1,3 +1,4 @@
+var fs = require('fs');
 angular.module('ngFormioHelper', ['formio', 'ui.router'])
     .filter('capitalize', [function() {
         return _.capitalize;
@@ -56,7 +57,7 @@ angular.module('ngFormioHelper', ['formio', 'ui.router'])
                             url: '/' + name,
                             parent: parent ? parent : null,
                             params: options.params && options.params.index,
-                            templateUrl: templates.index ? templates.index : 'views/resource/index.html',
+                            templateUrl: templates.index ? templates.index : 'formio-helper/resource/index.html',
                             controller: controller(function($scope, $rootScope, $state, $stateParams, Formio, FormioUtils, $controller) {
                                 $scope.currentResource = {
                                     name: name,
@@ -83,7 +84,7 @@ angular.module('ngFormioHelper', ['formio', 'ui.router'])
                             url: '/create/' + name,
                             parent: parent ? parent : null,
                             params: options.params && options.params.create,
-                            templateUrl: templates.create ? templates.create : 'views/resource/create.html',
+                            templateUrl: templates.create ? templates.create : 'formio-helper/resource/create.html',
                             controller: controller(function($scope, $rootScope, $state, $stateParams, Formio, FormioUtils, $controller) {
                                 $scope.currentResource = {
                                     name: name,
@@ -107,7 +108,7 @@ angular.module('ngFormioHelper', ['formio', 'ui.router'])
                             abstract: true,
                             url: '/' + name + '/:' + queryId,
                             parent: parent ? parent : null,
-                            templateUrl: 'views/resource.html',
+                            templateUrl: 'formio-helper/resource/resource.html',
                             controller: controller(function($scope, $rootScope, $state, $stateParams, Formio, FormioUtils, $controller) {
                                 var submissionUrl = url + '/submission/' + $stateParams[queryId];
                                 $scope.currentResource = $scope[name] = {
@@ -138,7 +139,7 @@ angular.module('ngFormioHelper', ['formio', 'ui.router'])
                             url: '/',
                             parent: name,
                             params: options.params && options.params.view,
-                            templateUrl: templates.view ? templates.view : 'views/resource/view.html',
+                            templateUrl: templates.view ? templates.view : 'formio-helper/resource/view.html',
                             controller: controller(function($scope, $rootScope, $state, $stateParams, Formio, FormioUtils, $controller) {
                                 if (options && options.view) {
                                     $controller(options.view, {$scope: $scope});
@@ -149,7 +150,7 @@ angular.module('ngFormioHelper', ['formio', 'ui.router'])
                             url: '/edit',
                             parent: name,
                             params: options.params && options.params.edit,
-                            templateUrl: templates.edit ? templates.edit : 'views/resource/edit.html',
+                            templateUrl: templates.edit ? templates.edit : 'formio-helper/resource/edit.html',
                             controller: controller(function($scope, $rootScope, $state, $stateParams, Formio, FormioUtils, $controller) {
                                 var handle = false;
                                 if (options && options.edit) {
@@ -167,7 +168,7 @@ angular.module('ngFormioHelper', ['formio', 'ui.router'])
                             url: '/delete',
                             parent: name,
                             params: options.params && options.params.delete,
-                            templateUrl: templates.delete ? templates.delete : 'views/resource/delete.html',
+                            templateUrl: templates.delete ? templates.delete : 'formio-helper/resource/delete.html',
                             controller: controller(function($scope, $rootScope, $state, $stateParams, Formio, FormioUtils, $controller) {
                                 var handle = false;
                                 if (options && options.delete) {
@@ -296,7 +297,7 @@ angular.module('ngFormioHelper', ['formio', 'ui.router'])
 
                                 $rootScope.$on('formio.sessionExpired', logoutError);
                                 $rootScope.$on('formio.unauthorized', function() {
-                                    $state.go(authState);
+                                    $state.go(anonState);
                                 });
 
                                 // Trigger when a logout occurs.
@@ -377,4 +378,34 @@ angular.module('ngFormioHelper', ['formio', 'ui.router'])
                 }
             };
         }
-    ]);
+    ])
+    .run([
+        '$templateCache',
+        function(
+            $templateCache
+        ) {
+            $templateCache.put('formio-helper/resource/resource.html',
+                fs.readFileSync(__dirname + '/templates/resource/resource.html', 'utf8')
+            );
+
+            $templateCache.put('formio-helper/resource/create.html',
+                fs.readFileSync(__dirname + '/templates/resource/create.html', 'utf8')
+            );
+
+            $templateCache.put('formio-helper/resource/delete.html',
+                fs.readFileSync(__dirname + '/templates/resource/delete.html', 'utf8')
+            );
+
+            $templateCache.put('formio-helper/resource/edit.html',
+                fs.readFileSync(__dirname + '/templates/resource/edit.html', 'utf8')
+            );
+
+            $templateCache.put('formio-helper/resource/index.html',
+                fs.readFileSync(__dirname + '/templates/resource/index.html', 'utf8')
+            );
+
+            $templateCache.put('formio-helper/resource/view.html',
+                fs.readFileSync(__dirname + '/templates/resource/view.html', 'utf8')
+            );
+        }
+    ])
