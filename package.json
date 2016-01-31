@@ -1,0 +1,27 @@
+{
+  "name": "ng-formio-helper",
+  "version": "0.0.1",
+  "description": "A library to help build Angluar.js applications on top of Form.io.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/formio/formio-form.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/formio/ngFormioHelper/issues"
+  },
+  "homepage": "https://github.com/formio/ngFormioHelper#readme",
+  "devDependencies": {
+    "del": "^1.2.0",
+    "gulp": "^3.9.0",
+    "gulp-load-plugins": "^1.0.0-rc.1",
+    "gulp-uglify": "^1.5.1",
+    "vinyl-paths": "^1.0.0"
+  },
+  "dependencies": {}
+}
