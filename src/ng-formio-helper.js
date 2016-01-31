@@ -215,6 +215,7 @@ angular.module('ngFormioHelper', ['formio', 'ui.router'])
                     authState = auth;
                 },
                 register: function(name, resource, path) {
+                    if (!path) { path = name; }
                     $stateProvider
                         .state('auth.' + name, {
                             url: '/' + path,
