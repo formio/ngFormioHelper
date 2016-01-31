@@ -91,7 +91,7 @@ angular.module('ngFormioHelper', ['formio', 'ui.router'])
                                     queryId: queryId,
                                     formUrl: url
                                 };
-                                $scope.submission = options.defaultValue ? options.defaultValue() : {data: {}};
+                                $scope.submission = options.defaultValue ? options.defaultValue : {data: {}};
                                 var handle = false;
                                 if (options && options.create) {
                                     var ctrl = $controller(options.create, {$scope: $scope});
