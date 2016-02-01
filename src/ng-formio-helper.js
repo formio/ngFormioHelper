@@ -288,7 +288,7 @@ angular.module('ngFormioHelper', ['formio', 'ui.router'])
                                 }
 
                                 var logoutError = function() {
-                                    $state.go(anonState);
+                                    $state.go(anonState, {}, {reload: true});
                                     FormioAlerts.addAlert({
                                         type: 'danger',
                                         message: 'Your session has expired. Please log in again.'
@@ -297,14 +297,15 @@ angular.module('ngFormioHelper', ['formio', 'ui.router'])
 
                                 $rootScope.$on('formio.sessionExpired', logoutError);
                                 $rootScope.$on('formio.unauthorized', function() {
-                                    $state.go(anonState);
+                                    $rootScope.setUser(null, null);
+                                    $state.go(anonState, {}, {reload: true});
                                 });
 
                                 // Trigger when a logout occurs.
                                 $rootScope.logout = function() {
                                     $rootScope.setUser(null, null);
                                     Formio.logout().then(function() {
-                                        $state.go(anonState);
+                                        $state.go(anonState, {}, {reload: true});
                                     }).catch(logoutError);
                                 };
 
@@ -315,7 +316,7 @@ angular.module('ngFormioHelper', ['formio', 'ui.router'])
                                         if (toState.name.substr(0, 4) === 'auth') { return; }
                                         if (!$rootScope.authenticated) {
                                             event.preventDefault();
-                                            $state.go(anonState);
+                                            $state.go(anonState, {}, {reload: true});
                                         }
                                     }
                                 });
