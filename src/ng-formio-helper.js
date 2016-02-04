@@ -52,9 +52,11 @@ angular.module('ngFormioHelper', ['formio', 'ui.router'])
                     };
 
                     var templates = (options && options.templates) ? options.templates : {};
+                    var controllers = (options && options.controllers) ? options.controllers : {};
+                    var query = options.query ? options.query : '';
                     $stateProvider
                         .state(name + 'Index', {
-                            url: '/' + name,
+                            url: '/' + name + query,
                             parent: parent ? parent : null,
                             params: options.params && options.params.index,
                             templateUrl: templates.index ? templates.index : 'formio-helper/resource/index.html',
@@ -75,8 +77,8 @@ angular.module('ngFormioHelper', ['formio', 'ui.router'])
                                 $scope.$on('submissionDelete', function(event, submission) {
                                     $state.go(name + '.delete', query(submission));
                                 });
-                                if (options && options.index) {
-                                    $controller(options.index, {$scope: $scope});
+                                if (controllers.index) {
+                                    $controller(controllers.index, {$scope: $scope});
                                 }
                             })
                         })
@@ -93,8 +95,8 @@ angular.module('ngFormioHelper', ['formio', 'ui.router'])
                                 };
                                 $scope.submission = options.defaultValue ? options.defaultValue : {data: {}};
                                 var handle = false;
-                                if (options && options.create) {
-                                    var ctrl = $controller(options.create, {$scope: $scope});
+                                if (controllers.create) {
+                                    var ctrl = $controller(controllers.create, {$scope: $scope});
                                     handle = (ctrl.handle || false);
                                 }
                                 if (!handle) {
@@ -108,7 +110,7 @@ angular.module('ngFormioHelper', ['formio', 'ui.router'])
                             abstract: true,
                             url: '/' + name + '/:' + queryId,
                             parent: parent ? parent : null,
-                            templateUrl: 'formio-helper/resource/resource.html',
+                            templateUrl: templates.abstract ? templates.abstract : 'formio-helper/resource/resource.html',
                             controller: controller(function($scope, $rootScope, $state, $stateParams, Formio, FormioUtils, $controller) {
                                 var submissionUrl = url + '/submission/' + $stateParams[queryId];
                                 $scope.currentResource = $scope[name] = {
@@ -130,8 +132,8 @@ angular.module('ngFormioHelper', ['formio', 'ui.router'])
                                     $scope.currentResource.resource = $scope[name].submission = submission;
                                 });
 
-                                if (options && options.abstract) {
-                                    $controller(options.abstract, {$scope: $scope});
+                                if (controllers.abstract) {
+                                    $controller(controllers.abstract, {$scope: $scope});
                                 }
                             })
                         })
@@ -141,8 +143,8 @@ angular.module('ngFormioHelper', ['formio', 'ui.router'])
                             params: options.params && options.params.view,
                             templateUrl: templates.view ? templates.view : 'formio-helper/resource/view.html',
                             controller: controller(function($scope, $rootScope, $state, $stateParams, Formio, FormioUtils, $controller) {
-                                if (options && options.view) {
-                                    $controller(options.view, {$scope: $scope});
+                                if (controllers.view) {
+                                    $controller(controllers.view, {$scope: $scope});
                                 }
                             })
                         })
@@ -153,8 +155,8 @@ angular.module('ngFormioHelper', ['formio', 'ui.router'])
                             templateUrl: templates.edit ? templates.edit : 'formio-helper/resource/edit.html',
                             controller: controller(function($scope, $rootScope, $state, $stateParams, Formio, FormioUtils, $controller) {
                                 var handle = false;
-                                if (options && options.edit) {
-                                    var ctrl = $controller(options.edit, {$scope: $scope});
+                                if (controllers.edit) {
+                                    var ctrl = $controller(controllers.edit, {$scope: $scope});
                                     handle = (ctrl.handle || false);
                                 }
                                 if (!handle) {
@@ -171,8 +173,8 @@ angular.module('ngFormioHelper', ['formio', 'ui.router'])
                             templateUrl: templates.delete ? templates.delete : 'formio-helper/resource/delete.html',
                             controller: controller(function($scope, $rootScope, $state, $stateParams, Formio, FormioUtils, $controller) {
                                 var handle = false;
-                                if (options && options.delete) {
-                                    var ctrl = $controller(options.delete, {$scope: $scope});
+                                if (controllers.delete) {
+                                    var ctrl = $controller(controllers.delete, {$scope: $scope});
                                     handle = (ctrl.handle || false);
                                 }
                                 if (!handle) {
@@ -296,10 +298,6 @@ angular.module('ngFormioHelper', ['formio', 'ui.router'])
                                 };
 
                                 $rootScope.$on('formio.sessionExpired', logoutError);
-                                $rootScope.$on('formio.unauthorized', function() {
-                                    $rootScope.setUser(null, null);
-                                    $state.go(anonState, {}, {reload: true});
-                                });
 
                                 // Trigger when a logout occurs.
                                 $rootScope.logout = function() {
@@ -321,18 +319,8 @@ angular.module('ngFormioHelper', ['formio', 'ui.router'])
                                     }
                                 });
 
-                                // Set the breadcrums and alerts.
+                                // Set the alerts
                                 $rootScope.$on('$stateChangeSuccess', function() {
-                                    $rootScope.breadcrumbs = [];
-                                    for (var i in $state.$current.path) {
-                                        var path = $state.$current.path[i];
-                                        if (path.abstract) {
-                                            $rootScope.breadcrumbs.push({
-                                                name: path.name,
-                                                state: path.name + '.view({' + path.name + 'Id:"' + $stateParams[path.name + 'Id'] + '"})'
-                                            });
-                                        }
-                                    }
                                     $rootScope.alerts = FormioAlerts.getAlerts();
                                 });
                             }
@@ -409,4 +397,4 @@ angular.module('ngFormioHelper', ['formio', 'ui.router'])
                 fs.readFileSync(__dirname + '/templates/resource/view.html', 'utf8')
             );
         }
-    ])
+    ]);
