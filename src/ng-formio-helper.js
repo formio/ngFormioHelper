@@ -53,10 +53,10 @@ angular.module('ngFormioHelper', ['formio', 'ui.router'])
 
                     var templates = (options && options.templates) ? options.templates : {};
                     var controllers = (options && options.controllers) ? options.controllers : {};
-                    var query = options.query ? options.query : '';
+                    var queryParams = options.query ? options.query : '';
                     $stateProvider
                         .state(name + 'Index', {
-                            url: '/' + name + query,
+                            url: '/' + name + queryParams,
                             parent: parent ? parent : null,
                             params: options.params && options.params.index,
                             templateUrl: templates.index ? templates.index : 'formio-helper/resource/index.html',
@@ -238,13 +238,11 @@ angular.module('ngFormioHelper', ['formio', 'ui.router'])
                     'FormioAlerts',
                     '$rootScope',
                     '$state',
-                    '$stateParams',
                     function(
                         Formio,
                         FormioAlerts,
                         $rootScope,
-                        $state,
-                        $stateParams
+                        $state
                     ) {
                         return {
                             init: function() {
