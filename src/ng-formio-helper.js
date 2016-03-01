@@ -556,6 +556,10 @@ angular.module('ngFormioHelper', ['formio', 'ui.router'])
                                     }
 
                                     $rootScope.authenticated = !!Formio.getToken();
+                                    $rootScope.$emit('user', {
+                                        user: $rootScope.user,
+                                        role: $rootScope.role
+                                    });
                                 };
 
                                 // Set the current user object and role.
