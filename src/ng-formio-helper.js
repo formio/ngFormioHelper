@@ -83,7 +83,7 @@ angular.module('ngFormioHelper', ['formio', 'ui.router'])
                             })
                         })
                         .state(name + 'Create', {
-                            url: '/create/' + name,
+                            url: '/create/' + name + queryParams,
                             parent: parent ? parent : null,
                             params: options.params && options.params.create,
                             templateUrl: templates.create ? templates.create : 'formio-helper/resource/create.html',
@@ -175,6 +175,7 @@ angular.module('ngFormioHelper', ['formio', 'ui.router'])
                             templateUrl: templates.delete ? templates.delete : 'formio-helper/resource/delete.html',
                             controller: controller(function($scope, $rootScope, $state, $stateParams, Formio, FormioUtils, $controller) {
                                 var handle = false;
+                                $scope.resourceName = name;
                                 if (controllers.delete) {
                                     var ctrl = $controller(controllers.delete, {$scope: $scope});
                                     handle = (ctrl.handle || false);
