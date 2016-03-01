@@ -1,0 +1,5 @@
+<ul class="nav nav-tabs">
+    <li role="presentation" ng-class="{active:isActive(formBase + 'form.view')}"><a ui-sref="{{ formBase }}form.view()">Form</a></li>
+    <li role="presentation" ng-class="{active:isActive(formBase + 'form.submissions')}"><a ui-sref="{{ formBase }}form.submissions()">Submissions</a></li>
+</ul>
+<div ui-view style="margin-top:20px;"></div>

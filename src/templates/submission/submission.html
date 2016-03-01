@@ -1,0 +1,6 @@
+<ul class="nav nav-pills">
+    <li role="presentation" ng-class="{active:isActive(formBase + 'form.submission.view')}"><a ui-sref="{{ formBase }}form.submission.view()">View</a></li>
+    <li role="presentation" ng-class="{active:isActive(formBase + 'form.submission.edit')}"><a ui-sref="{{ formBase }}form.submission.edit()">Edit</a></li>
+    <li role="presentation" ng-class="{active:isActive(formBase + 'form.submission.delete')}"><a ui-sref="{{ formBase }}form.submission.delete()">Delete</a></li>
+</ul>
+<div ui-view style="margin-top:20px;"></div>

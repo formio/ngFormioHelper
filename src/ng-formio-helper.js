@@ -83,7 +83,7 @@ angular.module('ngFormioHelper', ['formio', 'ui.router'])
                             })
                         })
                         .state(name + 'Create', {
-                            url: '/create/' + name,
+                            url: '/create/' + name + queryParams,
                             parent: parent ? parent : null,
                             params: options.params && options.params.create,
                             templateUrl: templates.create ? templates.create : 'formio-helper/resource/create.html',
@@ -127,9 +127,11 @@ angular.module('ngFormioHelper', ['formio', 'ui.router'])
 
                                 $scope.currentResource.loadFormPromise = $scope.currentResource.formio.loadForm().then(function(form) {
                                     $scope.currentResource.form = $scope[name].form = form;
+                                    return form;
                                 });
                                 $scope.currentResource.loadSubmissionPromise = $scope.currentResource.formio.loadSubmission().then(function(submission) {
                                     $scope.currentResource.resource = $scope[name].submission = submission;
+                                    return submission;
                                 });
 
                                 if (controllers.abstract) {
@@ -173,6 +175,7 @@ angular.module('ngFormioHelper', ['formio', 'ui.router'])
                             templateUrl: templates.delete ? templates.delete : 'formio-helper/resource/delete.html',
                             controller: controller(function($scope, $rootScope, $state, $stateParams, Formio, FormioUtils, $controller) {
                                 var handle = false;
+                                $scope.resourceName = name;
                                 if (controllers.delete) {
                                     var ctrl = $controller(controllers.delete, {$scope: $scope});
                                     handle = (ctrl.handle || false);
@@ -189,6 +192,287 @@ angular.module('ngFormioHelper', ['formio', 'ui.router'])
                                 }
                             })
                         });
+                },
+                $get: function() {
+                    return resources;
+                }
+            };
+        }
+    ])
+    .directive('formioForms', function() {
+        return {
+            restrict: 'E',
+            replace: true,
+            scope: {
+                src: '=',
+                base: '=',
+                tag: '=?'
+            },
+            templateUrl: 'formio-helper/form/list.html',
+            controller: ['$scope', 'Formio', function($scope, Formio) {
+                $scope.forms = [];
+                var params = {
+                    type: 'form'
+                };
+                if ($scope.tag) {
+                    params.tags = $scope.tag;
+                }
+                (new Formio($scope.src)).loadForms({params: params}).then(function(forms) {
+                    $scope.forms = forms;
+                });
+            }]
+        };
+    })
+    .provider('FormioForms', [
+        '$stateProvider',
+        function(
+          $stateProvider
+        ) {
+            var resources = {};
+            return {
+                register: function(name, url, options) {
+                    var templates = (options && options.templates) ? options.templates : {};
+                    var controllers = (options && options.controllers) ? options.controllers : {};
+                    var basePath = name ? name + '.' : '';
+                    $stateProvider
+                        .state(basePath + 'formIndex', {
+                            url: '/forms',
+                            params: options.params && options.params.index,
+                            templateUrl: templates.index ? templates.index : 'formio-helper/form/index.html',
+                            controller: ['$scope', 'Formio', '$controller', function($scope, Formio, $controller) {
+                                $scope.formBase = basePath;
+                                $scope.formsSrc = url + '/form';
+                                $scope.formsTag = options.tag;
+                                if (controllers.index) {
+                                    $controller(controllers.index, {$scope: $scope});
+                                }
+                            }]
+                        })
+                        .state(basePath + 'form', {
+                            url: '/form/:formId',
+                            abstract: true,
+                            templateUrl: templates.form ? templates.form : 'formio-helper/form/form.html',
+                            controller: [
+                                '$scope',
+                                '$stateParams',
+                                'Formio',
+                                '$controller',
+                                function(
+                                  $scope,
+                                  $stateParams,
+                                  Formio,
+                                  $controller
+                                ) {
+                                    var formUrl = url + '/form/' + $stateParams.formId;
+                                    $scope.formBase = basePath;
+                                    $scope.currentForm = {
+                                        name: name,
+                                        url: formUrl,
+                                        form: {}
+                                    };
+
+                                    $scope.currentForm.formio = (new Formio(formUrl));
+                                    $scope.currentForm.promise = $scope.currentForm.formio.loadForm().then(function(form) {
+                                        $scope.currentForm.form = form;
+                                        return form;
+                                    });
+
+                                    if (controllers.form) {
+                                        $controller(controllers.form, {$scope: $scope});
+                                    }
+                                }
+                            ]
+                        })
+                        .state(basePath + 'form.view', {
+                            url: '/',
+                            params: options.params && options.params.view,
+                            templateUrl: templates.view ? templates.view : 'formio-helper/form/view.html',
+                            controller: [
+                                '$scope',
+                                '$state',
+                                'FormioUtils',
+                                '$controller',
+                                function(
+                                  $scope,
+                                  $state,
+                                  FormioUtils,
+                                  $controller
+                                ) {
+                                    $scope.submission = {data: {}};
+                                    if (options.field) {
+                                        $scope.currentForm.promise.then(function() {
+                                            $scope.currentResource.loadSubmissionPromise.then(function(resource) {
+                                                $scope.submission.data[options.field] = resource;
+                                                FormioUtils.hideFields($scope.currentForm.form, [options.field]);
+                                            });
+                                        });
+                                    }
+                                    $scope.$on('formSubmission', function() {
+                                        $state.go(basePath + 'form.submissions');
+                                    });
+                                    if (controllers.view) {
+                                        $controller(controllers.view, {$scope: $scope});
+                                    }
+                                }
+                            ]
+                        })
+                        .state(basePath + 'form.submissions', {
+                            url: '/submissions',
+                            params: options.params && options.params.submissions,
+                            templateUrl: templates.submissions ? templates.submissions : 'formio-helper/submission/index.html',
+                            controller: [
+                                '$scope',
+                                '$state',
+                                '$stateParams',
+                                'FormioUtils',
+                                '$controller',
+                                function(
+                                  $scope,
+                                  $state,
+                                  $stateParams,
+                                  FormioUtils,
+                                  $controller
+                                ) {
+                                    $scope.submissionQuery = {};
+                                    $scope.submissionColumns = [];
+                                    if (options.field) {
+                                        $scope.submissionQuery['data.' + options.field + '._id'] = $stateParams[name + 'Id'];
+                                    }
+
+                                    // Go to the submission when they click on the row.
+                                    $scope.$on('rowView', function(event, entity) {
+                                        $state.go(basePath + 'form.submission.view', {
+                                            formId: entity.form,
+                                            submissionId: entity._id
+                                        });
+                                    });
+
+                                    // Wait until the current form is loaded.
+                                    $scope.currentForm.promise.then(function(form) {
+                                        FormioUtils.eachComponent(form.components, function(component) {
+                                            if (!component.key || !component.input || !component.tableView) {
+                                                return;
+                                            }
+                                            if (options.field && (component.key === options.field)) {
+                                                return;
+                                            }
+                                            $scope.submissionColumns.push(component.key);
+                                        });
+
+                                        // Ensure we reload the data grid.
+                                        $scope.$broadcast('reloadGrid');
+                                    });
+
+                                    if (controllers.submissions) {
+                                        $controller(controllers.submissions, {$scope: $scope});
+                                    }
+                                }
+                            ]
+                        })
+                        .state(basePath + 'form.submission', {
+                            abstract: true,
+                            url: '/submission/:submissionId',
+                            params: options.params && options.params.submission,
+                            templateUrl: templates.submission ? templates.submission : 'formio-helper/submission/submission.html',
+                            controller: [
+                              '$scope',
+                              '$stateParams',
+                              'Formio',
+                              '$controller',
+                              function(
+                                $scope,
+                                $stateParams,
+                                Formio,
+                                $controller
+                              ) {
+                                  $scope.currentSubmission = {
+                                      url: $scope.currentForm.url + '/submission/' + $stateParams.submissionId,
+                                      submission: {}
+                                  };
+
+                                  // Store the formio object.
+                                  $scope.currentSubmission.formio = (new Formio($scope.currentSubmission.url));
+
+                                  // Load the current submission.
+                                  $scope.currentSubmission.promise = $scope.currentSubmission.formio.loadSubmission().then(function(submission) {
+                                      $scope.currentSubmission.submission = submission;
+                                      return submission;
+                                  });
+
+                                  // Execute the controller.
+                                  if (controllers.submission) {
+                                      $controller(controllers.submission, {$scope: $scope});
+                                  }
+                              }
+                            ]
+                        })
+                        .state(basePath + 'form.submission.view', {
+                            url: '/',
+                            params: options.params && options.params.submissionView,
+                            templateUrl: templates.submissionView ? templates.submissionView : 'formio-helper/submission/view.html',
+                            controller: [
+                              '$scope',
+                              '$controller',
+                              function(
+                                $scope,
+                                $controller
+                              ) {
+                                  if (controllers.submissionView) {
+                                      $controller(controllers.submissionView, {$scope: $scope});
+                                  }
+                              }
+                            ]
+                        })
+                        .state(basePath + 'form.submission.edit', {
+                          url: '/edit',
+                          params: options.params && options.params.submissionEdit,
+                          templateUrl: templates.submissionEdit ? templates.submissionEdit : 'formio-helper/submission/edit.html',
+                          controller: [
+                              '$scope',
+                              '$state',
+                              '$controller',
+                              function(
+                                $scope,
+                                $state,
+                                $controller
+                              ) {
+                                  $scope.$on('formSubmission', function(event, submission) {
+                                      $scope.currentSubmission.submission = submission;
+                                      $state.go(basePath + 'form.submission.view');
+                                  });
+                                  if (controllers.submissionEdit) {
+                                      $controller(controllers.submissionEdit, {$scope: $scope});
+                                  }
+                              }
+                          ]
+                        })
+                        .state(basePath + 'form.submission.delete', {
+                          url: '/delete',
+                          params: options.params && options.params.submissionDelete,
+                          templateUrl: templates.submissionDelete ? templates.submissionDelete : 'formio-helper/submission/delete.html',
+                          controller: [
+                              '$scope',
+                              '$state',
+                              '$controller',
+                              function(
+                                $scope,
+                                $state,
+                                $controller
+                              ) {
+                                  $scope.$on('delete', function() {
+                                      $state.go(basePath + 'form.submissions');
+                                  });
+
+                                  $scope.$on('cancel', function() {
+                                      $state.go(basePath + 'form.submission.view');
+                                  });
+
+                                  if (controllers.submissionDelete) {
+                                      $controller(controllers.submissionDelete, {$scope: $scope});
+                                  }
+                              }
+                          ]
+                        })
                 },
                 $get: function() {
                     return resources;
@@ -368,9 +652,19 @@ angular.module('ngFormioHelper', ['formio', 'ui.router'])
     ])
     .run([
         '$templateCache',
+        '$rootScope',
+        '$state',
         function(
-            $templateCache
+            $templateCache,
+            $rootScope,
+            $state
         ) {
+            // Determine the active state.
+            $rootScope.isActive = function(state) {
+                return $state.current.name.indexOf(state) !== -1;
+            };
+
+            /**** RESOURCE TEMPLATES *******/
             $templateCache.put('formio-helper/resource/resource.html',
                 fs.readFileSync(__dirname + '/templates/resource/resource.html', 'utf8')
             );
@@ -393,6 +687,44 @@ angular.module('ngFormioHelper', ['formio', 'ui.router'])
 
             $templateCache.put('formio-helper/resource/view.html',
                 fs.readFileSync(__dirname + '/templates/resource/view.html', 'utf8')
+            );
+
+            /**** FORM TEMPLATES *******/
+            $templateCache.put('formio-helper/form/list.html',
+              fs.readFileSync(__dirname + '/templates/form/list.html', 'utf8')
+            );
+
+            $templateCache.put('formio-helper/form/index.html',
+              fs.readFileSync(__dirname + '/templates/form/index.html', 'utf8')
+            );
+
+            $templateCache.put('formio-helper/form/form.html',
+              fs.readFileSync(__dirname + '/templates/form/form.html', 'utf8')
+            );
+
+            $templateCache.put('formio-helper/form/view.html',
+              fs.readFileSync(__dirname + '/templates/form/view.html', 'utf8')
+            );
+
+            /**** SUBMISSION TEMPLATES *******/
+            $templateCache.put('formio-helper/submission/index.html',
+              fs.readFileSync(__dirname + '/templates/submission/index.html', 'utf8')
+            );
+
+            $templateCache.put('formio-helper/submission/submission.html',
+              fs.readFileSync(__dirname + '/templates/submission/submission.html', 'utf8')
+            );
+
+            $templateCache.put('formio-helper/submission/view.html',
+              fs.readFileSync(__dirname + '/templates/submission/view.html', 'utf8')
+            );
+
+            $templateCache.put('formio-helper/submission/edit.html',
+              fs.readFileSync(__dirname + '/templates/submission/edit.html', 'utf8')
+            );
+
+            $templateCache.put('formio-helper/submission/delete.html',
+              fs.readFileSync(__dirname + '/templates/submission/delete.html', 'utf8')
             );
         }
     ]);
