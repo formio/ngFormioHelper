@@ -39,7 +39,7 @@ angular.module('ngFormioHelper', ['formio', 'ui.router'])
             var resources = {};
             return {
                 register: function(name, url, options) {
-                    resources[name] = name;
+                    resources[name] = options.title || name;
                     var parent = (options && options.parent) ? options.parent : null;
                     var queryId = name + 'Id';
                     var query = function(submission) {
