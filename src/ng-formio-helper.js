@@ -39,6 +39,7 @@ angular.module('ngFormioHelper', ['formio', 'ui.router'])
             var resources = {};
             return {
                 register: function(name, url, options) {
+                    options = options || {};
                     resources[name] = options.title || name;
                     var parent = (options && options.parent) ? options.parent : null;
                     var queryId = name + 'Id';
@@ -46,9 +47,6 @@ angular.module('ngFormioHelper', ['formio', 'ui.router'])
                         var query = {};
                         query[queryId] = submission._id;
                         return query;
-                    };
-                    var controller = function(ctrl) {
-                        return ['$scope', '$rootScope', '$state', '$stateParams', 'Formio', 'FormioUtils', '$controller', ctrl];
                     };
 
                     var templates = (options && options.templates) ? options.templates : {};
@@ -60,137 +58,220 @@ angular.module('ngFormioHelper', ['formio', 'ui.router'])
                             parent: parent ? parent : null,
                             params: options.params && options.params.index,
                             templateUrl: templates.index ? templates.index : 'formio-helper/resource/index.html',
-                            controller: controller(function($scope, $rootScope, $state, $stateParams, Formio, FormioUtils, $controller) {
-                                $scope.currentResource = {
-                                    name: name,
-                                    queryId: queryId,
-                                    formUrl: url
-                                };
-                                $scope.$on('submissionView', function(event, submission) {
-                                    $state.go(name + '.view', query(submission));
-                                });
+                            controller: [
+                                '$scope',
+                                '$state',
+                                '$controller',
+                                function(
+                                  $scope,
+                                  $state,
+                                  $controller
+                                ) {
+                                    $scope.currentResource = {
+                                        name: name,
+                                        queryId: queryId,
+                                        formUrl: url,
+                                        columns: [],
+                                        gridOptions: {}
+                                    };
+                                    $scope.$on('rowView', function(event, submission) {
+                                        $state.go(name + '.view', query(submission));
+                                    });
+                                    $scope.$on('submissionView', function(event, submission) {
+                                        $state.go(name + '.view', query(submission));
+                                    });
 
-                                $scope.$on('submissionEdit', function(event, submission) {
-                                    $state.go(name + '.edit', query(submission));
-                                });
+                                    $scope.$on('submissionEdit', function(event, submission) {
+                                        $state.go(name + '.edit', query(submission));
+                                    });
 
-                                $scope.$on('submissionDelete', function(event, submission) {
-                                    $state.go(name + '.delete', query(submission));
-                                });
-                                if (controllers.index) {
-                                    $controller(controllers.index, {$scope: $scope});
+                                    $scope.$on('submissionDelete', function(event, submission) {
+                                        $state.go(name + '.delete', query(submission));
+                                    });
+                                    if (controllers.index) {
+                                        $controller(controllers.index, {$scope: $scope});
+                                    }
                                 }
-                            })
+                            ]
                         })
                         .state(name + 'Create', {
                             url: '/create/' + name + queryParams,
                             parent: parent ? parent : null,
                             params: options.params && options.params.create,
                             templateUrl: templates.create ? templates.create : 'formio-helper/resource/create.html',
-                            controller: controller(function($scope, $rootScope, $state, $stateParams, Formio, FormioUtils, $controller) {
-                                $scope.currentResource = {
-                                    name: name,
-                                    queryId: queryId,
-                                    formUrl: url
-                                };
-                                $scope.submission = options.defaultValue ? options.defaultValue : {data: {}};
-                                var handle = false;
-                                if (controllers.create) {
-                                    var ctrl = $controller(controllers.create, {$scope: $scope});
-                                    handle = (ctrl.handle || false);
+                            controller: [
+                                '$scope',
+                                '$state',
+                                '$controller',
+                                function(
+                                  $scope,
+                                  $state,
+                                  $controller
+                                ) {
+                                    $scope.currentResource = {
+                                        name: name,
+                                        queryId: queryId,
+                                        formUrl: url
+                                    };
+                                    $scope.submission = options.defaultValue ? options.defaultValue : {data: {}};
+                                    var handle = false;
+                                    if (controllers.create) {
+                                        var ctrl = $controller(controllers.create, {$scope: $scope});
+                                        handle = (ctrl.handle || false);
+                                    }
+                                    if (!handle) {
+                                        $scope.$on('formSubmission', function(event, submission) {
+                                            $state.go(name + '.view', query(submission));
+                                        });
+                                    }
                                 }
-                                if (!handle) {
-                                    $scope.$on('formSubmission', function(event, submission) {
-                                        $state.go(name + '.view', query(submission));
-                                    });
-                                }
-                            })
+                            ]
                         })
                         .state(name, {
                             abstract: true,
                             url: '/' + name + '/:' + queryId,
                             parent: parent ? parent : null,
                             templateUrl: templates.abstract ? templates.abstract : 'formio-helper/resource/resource.html',
-                            controller: controller(function($scope, $rootScope, $state, $stateParams, Formio, FormioUtils, $controller) {
-                                var submissionUrl = url + '/submission/' + $stateParams[queryId];
-                                $scope.currentResource = $scope[name] = {
-                                    name: name,
-                                    queryId: queryId,
-                                    formUrl: url,
-                                    submissionUrl: submissionUrl,
-                                    formio: (new Formio(submissionUrl)),
-                                    resource: {},
-                                    form: {},
-                                    href: '/#/' + name + '/' + $stateParams[queryId] + '/',
-                                    parent: parent ? $scope[parent] : {href: '/#/', name: 'home'}
-                                };
+                            controller: [
+                                '$scope',
+                                '$stateParams',
+                                'Formio',
+                                '$controller',
+                                '$http',
+                                function(
+                                  $scope,
+                                  $stateParams,
+                                  Formio,
+                                  $controller,
+                                  $http
+                                ) {
+                                    var submissionUrl = url;
+                                    var endpoint = options.endpoint;
+                                    if (endpoint) {
+                                        endpoint += '/' + $stateParams[queryId];
+                                    }
+                                    else {
+                                        submissionUrl += '/submission/' + $stateParams[queryId];
+                                    }
 
-                                $scope.currentResource.loadFormPromise = $scope.currentResource.formio.loadForm().then(function(form) {
-                                    $scope.currentResource.form = $scope[name].form = form;
-                                    return form;
-                                });
-                                $scope.currentResource.loadSubmissionPromise = $scope.currentResource.formio.loadSubmission().then(function(submission) {
-                                    $scope.currentResource.resource = $scope[name].submission = submission;
-                                    return submission;
-                                });
+                                    $scope.currentResource = $scope[name] = {
+                                        name: name,
+                                        queryId: queryId,
+                                        formUrl: url,
+                                        submissionUrl: submissionUrl,
+                                        formio: (new Formio(submissionUrl)),
+                                        resource: {},
+                                        form: {},
+                                        href: '/#/' + name + '/' + $stateParams[queryId] + '/',
+                                        parent: parent ? $scope[parent] : {href: '/#/', name: 'home'}
+                                    };
 
-                                if (controllers.abstract) {
-                                    $controller(controllers.abstract, {$scope: $scope});
+                                    $scope.currentResource.loadFormPromise = $scope.currentResource.formio.loadForm().then(function(form) {
+                                        $scope.currentResource.form = $scope[name].form = form;
+                                        return form;
+                                    });
+
+                                    // If they provide their own endpoint for data.
+                                    if (options.endpoint) {
+                                        $scope.currentResource.loadSubmissionPromise = $http.get(endpoint, {
+                                            headers: {
+                                                'x-jwt-token': Formio.getToken()
+                                            }
+                                        }).then(function(result) {
+                                            $scope.currentResource.resource = result.data;
+                                            return result.data;
+                                        });
+                                    }
+                                    else {
+                                        $scope.currentResource.loadSubmissionPromise = $scope.currentResource.formio.loadSubmission().then(function(submission) {
+                                            $scope.currentResource.resource = $scope[name].submission = submission;
+                                            return submission;
+                                        });
+                                    }
+
+                                    if (controllers.abstract) {
+                                        $controller(controllers.abstract, {$scope: $scope});
+                                    }
                                 }
-                            })
+                            ]
                         })
                         .state(name + '.view', {
                             url: '/',
                             parent: name,
                             params: options.params && options.params.view,
                             templateUrl: templates.view ? templates.view : 'formio-helper/resource/view.html',
-                            controller: controller(function($scope, $rootScope, $state, $stateParams, Formio, FormioUtils, $controller) {
-                                if (controllers.view) {
-                                    $controller(controllers.view, {$scope: $scope});
+                            controller: [
+                                '$scope',
+                                '$controller',
+                                function(
+                                  $scope,
+                                  $controller
+                                ) {
+                                    if (controllers.view) {
+                                        $controller(controllers.view, {$scope: $scope});
+                                    }
                                 }
-                            })
+                            ]
                         })
                         .state(name + '.edit', {
                             url: '/edit',
                             parent: name,
                             params: options.params && options.params.edit,
                             templateUrl: templates.edit ? templates.edit : 'formio-helper/resource/edit.html',
-                            controller: controller(function($scope, $rootScope, $state, $stateParams, Formio, FormioUtils, $controller) {
-                                var handle = false;
-                                if (controllers.edit) {
-                                    var ctrl = $controller(controllers.edit, {$scope: $scope});
-                                    handle = (ctrl.handle || false);
+                            controller: [
+                                '$scope',
+                                '$state',
+                                '$controller',
+                                function(
+                                  $scope,
+                                  $state,
+                                  $controller
+                                ) {
+                                    var handle = false;
+                                    if (controllers.edit) {
+                                        var ctrl = $controller(controllers.edit, {$scope: $scope});
+                                        handle = (ctrl.handle || false);
+                                    }
+                                    if (!handle) {
+                                        $scope.$on('formSubmission', function(event, submission) {
+                                            $state.go(name + '.view', query(submission));
+                                        });
+                                    }
                                 }
-                                if (!handle) {
-                                    $scope.$on('formSubmission', function(event, submission) {
-                                        $state.go(name + '.view', query(submission));
-                                    });
-                                }
-                            })
+                            ]
                         })
                         .state(name + '.delete', {
                             url: '/delete',
                             parent: name,
                             params: options.params && options.params.delete,
                             templateUrl: templates.delete ? templates.delete : 'formio-helper/resource/delete.html',
-                            controller: controller(function($scope, $rootScope, $state, $stateParams, Formio, FormioUtils, $controller) {
-                                var handle = false;
-                                $scope.resourceName = name;
-                                if (controllers.delete) {
-                                    var ctrl = $controller(controllers.delete, {$scope: $scope});
-                                    handle = (ctrl.handle || false);
+                            controller: [
+                                '$scope',
+                                '$state',
+                                '$controller',
+                                function(
+                                  $scope,
+                                  $state,
+                                  $controller
+                                ) {
+                                    var handle = false;
+                                    $scope.resourceName = name;
+                                    if (controllers.delete) {
+                                        var ctrl = $controller(controllers.delete, {$scope: $scope});
+                                        handle = (ctrl.handle || false);
+                                    }
+                                    if (!handle) {
+                                        $scope.$on('delete', function() {
+                                            if (parent && parent !== 'home') {
+                                                $state.go(parent + '.view');
+                                            }
+                                            else {
+                                                $state.go('home', null, {reload: true});
+                                            }
+                                        });
+                                    }
                                 }
-                                if (!handle) {
-                                    $scope.$on('delete', function() {
-                                        if (parent && parent !== 'home') {
-                                            $state.go(parent + '.view');
-                                        }
-                                        else {
-                                            $state.go('home', null, {reload: true});
-                                        }
-                                    });
-                                }
-                            })
+                            ]
                         });
                 },
                 $get: function() {
@@ -488,11 +569,7 @@ angular.module('ngFormioHelper', ['formio', 'ui.router'])
             var anonState = 'auth.login';
             var authState = 'home';
             var forceAuth = false;
-            $stateProvider.state('auth', {
-                abstract: true,
-                url: '/auth',
-                templateUrl: 'views/user/auth.html'
-            });
+            var registered = false;
             return {
                 setForceAuth: function(force) {
                     forceAuth = force;
@@ -502,6 +579,15 @@ angular.module('ngFormioHelper', ['formio', 'ui.router'])
                     authState = auth;
                 },
                 register: function(name, resource, path) {
+                    if (!registered) {
+                        registered = true;
+                        $stateProvider.state('auth', {
+                            abstract: true,
+                            url: '/auth',
+                            templateUrl: 'views/user/auth.html'
+                        });
+                    }
+
                     if (!path) { path = name; }
                     $stateProvider
                         .state('auth.' + name, {
