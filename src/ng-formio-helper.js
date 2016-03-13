@@ -1,5 +1,5 @@
 var fs = require('fs');
-angular.module('ngFormioHelper', ['formio', 'ui.router'])
+angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
     .filter('capitalize', [function() {
         return _.capitalize;
     }])
