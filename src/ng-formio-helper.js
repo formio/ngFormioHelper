@@ -280,6 +280,9 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
                                                 $state.go('home', null, {reload: true});
                                             }
                                         });
+                                        $scope.$on('cancel', function() {
+                                            $state.go(name + 'Index');
+                                        });
                                     }
                                 }
                             ]
