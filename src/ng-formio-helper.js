@@ -120,7 +120,10 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
                                         handle = (ctrl.handle || false);
                                     }
                                     if (parent) {
-                                        $scope.hideComponents = [parent];
+                                        if (!$scope.hideComponents) {
+                                            $scope.hideComponents = [];
+                                        }
+                                        $scope.hideComponents.push(parent);
 
                                         // Auto populate the parent entity with the new data.
                                         $scope[parent].loadSubmissionPromise.then(function(entity) {
