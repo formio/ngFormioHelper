@@ -323,7 +323,8 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
             controller: ['$scope', 'Formio', function($scope, Formio) {
                 $scope.forms = [];
                 var params = {
-                    type: 'form'
+                    type: 'form',
+                    limit: 9999999
                 };
                 var loadForms = function() {
                     if (!$scope.src) { return; }
@@ -826,7 +827,7 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
 
             /**** FORM TEMPLATES *******/
             $templateCache.put('formio-helper/form/list.html',
-              "<ul class=\"list-group\">\n    <li class=\"list-group-item\" ng-repeat=\"form in forms\"><a ui-sref=\"{{ base }}form.view({formId: form._id})\">{{ form.title }}</a></li>\n</ul>\n"
+              "<ul class=\"list-group\">\n    <li class=\"list-group-item\" ng-repeat=\"form in forms | orderBy: 'title'\"><a ui-sref=\"{{ base }}form.view({formId: form._id})\">{{ form.title }}</a></li>\n</ul>\n"
             );
 
             $templateCache.put('formio-helper/form/index.html',

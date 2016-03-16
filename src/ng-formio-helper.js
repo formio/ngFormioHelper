@@ -321,7 +321,8 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
             controller: ['$scope', 'Formio', function($scope, Formio) {
                 $scope.forms = [];
                 var params = {
-                    type: 'form'
+                    type: 'form',
+                    limit: 9999999
                 };
                 var loadForms = function() {
                     if (!$scope.src) { return; }
