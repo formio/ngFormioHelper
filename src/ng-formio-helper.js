@@ -375,6 +375,7 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
                           FormioUtils,
                           $controller) {
                   $scope.submission = {data: {}};
+                  var handle = false;
                   if (options.field) {
                     $scope.currentForm.promise.then(function () {
                       $scope.currentResource.loadSubmissionPromise.then(function (resource) {
@@ -383,11 +384,14 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
                       });
                     });
                   }
-                  $scope.$on('formSubmission', function () {
-                    $state.go(basePath + 'form.submissions');
-                  });
                   if (controllers.view) {
-                    $controller(controllers.view, {$scope: $scope});
+                    var ctrl = $controller(controllers.view, {$scope: $scope});
+                    handle = (ctrl.handle || false);
+                  }
+                  if (!handle) {
+                    $scope.$on('formSubmission', function () {
+                      $state.go(basePath + 'form.submissions');
+                    });
                   }
                 }
               ]
@@ -504,12 +508,16 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
                 function ($scope,
                           $state,
                           $controller) {
-                  $scope.$on('formSubmission', function (event, submission) {
-                    $scope.currentSubmission.submission = submission;
-                    $state.go(basePath + 'form.submission.view');
-                  });
+                  var handle = false;
                   if (controllers.submissionEdit) {
-                    $controller(controllers.submissionEdit, {$scope: $scope});
+                    var ctrl = $controller(controllers.submissionEdit, {$scope: $scope});
+                    handle = (ctrl.handle || false);
+                  }
+                  if (!handle) {
+                    $scope.$on('formSubmission', function (event, submission) {
+                      $scope.currentSubmission.submission = submission;
+                      $state.go(basePath + 'form.submission.view');
+                    });
                   }
                 }
               ]
@@ -525,16 +533,19 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
                 function ($scope,
                           $state,
                           $controller) {
-                  $scope.$on('delete', function () {
-                    $state.go(basePath + 'form.submissions');
-                  });
-
-                  $scope.$on('cancel', function () {
-                    $state.go(basePath + 'form.submission.view');
-                  });
-
+                  var handle = false;
                   if (controllers.submissionDelete) {
-                    $controller(controllers.submissionDelete, {$scope: $scope});
+                    var ctrl = $controller(controllers.submissionDelete, {$scope: $scope});
+                    handle = (ctrl.handle || false);
+                  }
+                  if (!handle) {
+                    $scope.$on('delete', function () {
+                      $state.go(basePath + 'form.submissions');
+                    });
+
+                    $scope.$on('cancel', function () {
+                      $state.go(basePath + 'form.submission.view');
+                    });
                   }
                 }
               ]
