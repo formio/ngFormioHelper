@@ -463,7 +463,9 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
                           $controller) {
                   $scope.currentSubmission = {
                     url: $scope.currentForm.url + '/submission/' + $stateParams.submissionId,
-                    submission: {}
+                    submission: {
+                      data: {}
+                    }
                   };
 
                   // Store the formio object.
