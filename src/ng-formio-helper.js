@@ -126,6 +126,7 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
                   }
                   if (!handle) {
                     $scope.$on('formSubmission', function (event, submission) {
+                      $scope.currentResource.resource = submission;
                       $state.go(name + '.view', query(submission));
                     });
                   }
@@ -233,6 +234,7 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
                   }
                   if (!handle) {
                     $scope.$on('formSubmission', function (event, submission) {
+                      $scope.currentResource.resource = submission;
                       $state.go(name + '.view', query(submission));
                     });
                   }
