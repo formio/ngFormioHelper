@@ -41,17 +41,32 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
           resources[name] = options.title || name;
           var parent = (options && options.parent) ? options.parent : null;
           var queryId = name + 'Id';
+          options.base = options.base || '';
+          var baseName = options.base + name;
           var query = function (submission) {
             var query = {};
             query[queryId] = submission._id;
             return query;
           };
 
+          // Allow them to alter the options per state.
+          var baseAlter = function (options) {
+            return options;
+          };
+          options.alter = angular.extend({
+            index: baseAlter,
+            create: baseAlter,
+            abstract: baseAlter,
+            view: baseAlter,
+            edit: baseAlter,
+            delete: baseAlter
+          }, options.alter);
+
           var templates = (options && options.templates) ? options.templates : {};
           var controllers = (options && options.controllers) ? options.controllers : {};
           var queryParams = options.query ? options.query : '';
           $stateProvider
-            .state(name + 'Index', {
+            .state(baseName + 'Index', options.alter.index({
               url: '/' + name + queryParams,
               parent: parent ? parent : null,
               params: options.params && options.params.index,
@@ -89,8 +104,8 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
                   }
                 }
               ]
-            })
-            .state(name + 'Create', {
+            }))
+            .state(baseName + 'Create', options.alter.create({
               url: '/create/' + name + queryParams,
               parent: parent ? parent : null,
               params: options.params && options.params.create,
@@ -108,6 +123,7 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
                     formUrl: url
                   };
                   $scope.submission = options.defaultValue ? options.defaultValue : {data: {}};
+                  $scope.pageTitle = 'New ' + _.capitalize(name);
                   var handle = false;
                   if (controllers.create) {
                     var ctrl = $controller(controllers.create, {$scope: $scope});
@@ -132,8 +148,8 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
                   }
                 }
               ]
-            })
-            .state(name, {
+            }))
+            .state(baseName, options.alter.abstract({
               abstract: true,
               url: '/' + name + '/:' + queryId,
               parent: parent ? parent : null,
@@ -198,10 +214,10 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
                   }
                 }
               ]
-            })
-            .state(name + '.view', {
+            }))
+            .state(baseName + '.view', options.alter.view({
               url: '/',
-              parent: name,
+              parent: baseName,
               params: options.params && options.params.view,
               templateUrl: templates.view ? templates.view : 'formio-helper/resource/view.html',
               controller: [
@@ -214,10 +230,10 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
                   }
                 }
               ]
-            })
-            .state(name + '.edit', {
+            }))
+            .state(baseName + '.edit', options.alter.edit({
               url: '/edit',
-              parent: name,
+              parent: baseName,
               params: options.params && options.params.edit,
               templateUrl: templates.edit ? templates.edit : 'formio-helper/resource/edit.html',
               controller: [
@@ -240,10 +256,10 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
                   }
                 }
               ]
-            })
-            .state(name + '.delete', {
+            }))
+            .state(baseName + '.delete', options.alter.delete({
               url: '/delete',
-              parent: name,
+              parent: baseName,
               params: options.params && options.params.delete,
               templateUrl: templates.delete ? templates.delete : 'formio-helper/resource/delete.html',
               controller: [
@@ -274,7 +290,7 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
                   }
                 }
               ]
-            });
+            }));
         },
         $get: function () {
           return resources;
@@ -298,12 +314,19 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
           type: 'form',
           limit: 9999999
         };
-        if ($scope.tag) {
-          params.tags = $scope.tag;
-        }
-        (new Formio($scope.src)).loadForms({params: params}).then(function (forms) {
-          $scope.forms = forms;
-        });
+        var loadForms = function () {
+          if (!$scope.src) {
+            return;
+          }
+          if ($scope.tag) {
+            params.tags = $scope.tag;
+          }
+          (new Formio($scope.src)).loadForms({params: params}).then(function (forms) {
+            $scope.forms = forms;
+          });
+        };
+
+        $scope.$watch('src', loadForms);
       }]
     };
   })
@@ -313,9 +336,15 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
       var resources = {};
       return {
         register: function (name, url, options) {
-          var templates = (options && options.templates) ? options.templates : {};
-          var controllers = (options && options.controllers) ? options.controllers : {};
-          var basePath = name ? name + '.' : '';
+          options = options || {};
+          var templates = options.templates ? options.templates : {};
+          var controllers = options.controllers ? options.controllers : {};
+          var fields = (typeof options.field === 'string') ? [options.field] : options.field;
+          var basePath = options.base ? options.base : '';
+          if (!basePath) {
+            basePath = name ? name + '.' : '';
+          }
+
           $stateProvider
             .state(basePath + 'formIndex', {
               url: '/forms',
@@ -324,7 +353,7 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
               controller: ['$scope', 'Formio', '$controller', function ($scope, Formio, $controller) {
                 $scope.formBase = basePath;
                 $scope.formsSrc = url + '/form';
-                $scope.formsTag = options.tag;
+                $scope.formsTag = $scope.formsTag || options.tag;
                 if (controllers.index) {
                   $controller(controllers.index, {$scope: $scope});
                 }
@@ -378,11 +407,13 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
                           $controller) {
                   $scope.submission = {data: {}};
                   var handle = false;
-                  if (options.field) {
+                  if (fields && fields.length) {
+                    $scope.hideComponents = fields;
                     $scope.currentForm.promise.then(function () {
-                      $scope.currentResource.loadSubmissionPromise.then(function (resource) {
-                        $scope.submission.data[options.field] = resource;
-                        FormioUtils.hideFields($scope.currentForm.form, [options.field]);
+                      fields.forEach(function (field) {
+                        $scope[field].loadSubmissionPromise.then(function (resource) {
+                          $scope.submission.data[field] = resource;
+                        });
                       });
                     });
                   }
@@ -415,8 +446,10 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
                           $controller) {
                   $scope.submissionQuery = {};
                   $scope.submissionColumns = [];
-                  if (options.field) {
-                    $scope.submissionQuery['data.' + options.field + '._id'] = $stateParams[name + 'Id'];
+                  if (fields && fields.length) {
+                    fields.forEach(function (field) {
+                      $scope.submissionQuery['data.' + field + '._id'] = $stateParams[field + 'Id'];
+                    });
                   }
 
                   // Go to the submission when they click on the row.
@@ -433,7 +466,7 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
                       if (!component.key || !component.input || !component.tableView) {
                         return;
                       }
-                      if (options.field && (component.key === options.field)) {
+                      if (fields && fields.length && (fields.indexOf(component.key) !== -1)) {
                         return;
                       }
                       $scope.submissionColumns.push(component.key);

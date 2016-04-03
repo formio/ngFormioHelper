@@ -1,3 +1,3 @@
-<h3>New {{ currentResource.name | capitalize }}</h3>
-<hr></hr>
+<h3 ng-if="pageTitle">{{ pageTitle }}</h3>
+<hr ng-if="pageTitle"></hr>
 <formio src="currentResource.formUrl" submission="submission" hide-components="hideComponents"></formio>
