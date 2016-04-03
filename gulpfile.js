@@ -14,7 +14,7 @@ gulp.task('clean', function() {
 
 var bundle = plugins.browserify({
     entries: './src/ng-formio-helper.js',
-    debug: true
+    debug: false
 });
 
 // Wire the dependencies into index.html
