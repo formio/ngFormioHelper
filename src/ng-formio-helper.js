@@ -597,6 +597,7 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
   .provider('FormioAuth', [
     '$stateProvider',
     function ($stateProvider) {
+      var init = false;
       var anonState = 'auth.login';
       var anonRole = false;
       var appUrl = '';
@@ -659,6 +660,7 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
                     $state) {
             return {
               init: function () {
+                init = true;
                 // Format the roles and access for easy usage.
                 (new Formio(appUrl + '/form')).loadForms({params:{limit: 9999999}}).then(function (forms) {
                   forms.forEach(function(form) {
@@ -700,24 +702,38 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
                   });
                 };
 
-                $rootScope.hasAccess = function(form, permission) {
+                $rootScope.hasAccess = function(form, permissions) {
+                  // Bypass if using an alternative Auth system.
+                  if (!init) {
+                    return true;
+                  }
+
+                  // Allow single permission or array of permissions.
+                  if (!Array.isArray(permissions)) {
+                    permissions = [permissions];
+                  }
+
                   // Check that the formAccess has been initialized.
-                  if (!formAccess[form] || !formAccess[form][permission]) {
+                  if (!formAccess[form]) {
                     return false;
                   }
                   var hasAccess = false;
-                  // Check for anonymous users. Must set anonRole.
-                  if (!$rootScope.user) {
-                    hasAccess = formAccess[form][permission].indexOf(anonRole) !== -1;
-                  }
-                  else {
-                    // Check the user's roles for access.
-                    $rootScope.user.roles.forEach(function(role) {
-                      if (formAccess[form][permission].indexOf(role) !== -1) {
+                  permissions.forEach(function(permission) {
+                    // Check for anonymous users. Must set anonRole.
+                    if (!$rootScope.user) {
+                      if (formAccess[form][permission].indexOf(anonRole) !== -1) {
                         hasAccess = true;
                       }
-                    });
-                  }
+                    }
+                    else {
+                      // Check the user's roles for access.
+                      $rootScope.user.roles.forEach(function(role) {
+                        if (formAccess[form][permission].indexOf(role) !== -1) {
+                          hasAccess = true;
+                        }
+                      });
+                    }
+                  });
                   return hasAccess;
                 };
 
