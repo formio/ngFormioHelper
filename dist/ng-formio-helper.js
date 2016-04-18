@@ -669,7 +669,6 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
                     $rootScope.user = null;
                     localStorage.removeItem('formioAppUser');
                     localStorage.removeItem('formioUser');
-                    localStorage.removeItem('formioToken');
                   }
 
                   if (!role) {
@@ -702,6 +701,8 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
                 }
 
                 var logoutError = function () {
+                  $rootScope.setUser(null, null);
+                  localStorage.removeItem('formioToken');
                   $state.go(anonState, {}, {reload: true});
                   FormioAlerts.addAlert({
                     type: 'danger',
@@ -714,6 +715,7 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
                 // Trigger when a logout occurs.
                 $rootScope.logout = function () {
                   $rootScope.setUser(null, null);
+                  localStorage.removeItem('formioToken');
                   Formio.logout().then(function () {
                     $state.go(anonState, {}, {reload: true});
                   }).catch(logoutError);
