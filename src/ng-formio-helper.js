@@ -460,25 +460,30 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
                     });
                   });
 
-                  // Wait until the current form is loaded.
-                  $scope.currentForm.promise.then(function (form) {
-                    FormioUtils.eachComponent(form.components, function (component) {
-                      if (!component.key || !component.input || !component.tableView) {
-                        return;
-                      }
-                      if (fields && fields.length && (fields.indexOf(component.key) !== -1)) {
-                        return;
-                      }
-                      $scope.submissionColumns.push(component.key);
-                    });
-
-                    // Ensure we reload the data grid.
-                    $scope.$broadcast('reloadGrid');
-                  });
-
                   if (controllers.submissions) {
                     $controller(controllers.submissions, {$scope: $scope});
                   }
+
+                  $scope.currentForm.promise.then(function (form) {
+                    localStorage.setItem(form.name, '');
+                    if (
+                      !$scope.submissionColumns.length &&
+                      !Object.keys($scope.submissionColumns).length === 0
+                    ) {
+                      FormioUtils.eachComponent(form.components, function (component) {
+                        if (!component.key || !component.input || !component.tableView) {
+                          return;
+                        }
+                        if (fields && fields.length && (fields.indexOf(component.key) !== -1)) {
+                          return;
+                        }
+                        $scope.submissionColumns.push(component.key);
+                      });
+
+                      // Ensure we reload the data grid.
+                      $scope.$broadcast('reloadGrid');
+                    }
+                  });
                 }
               ]
             })
