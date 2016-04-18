@@ -604,10 +604,15 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
   .provider('FormioAuth', [
     '$stateProvider',
     function ($stateProvider) {
+      var init = false;
       var anonState = 'auth.login';
+      var anonRole = false;
+      var appUrl = '';
       var authState = 'home';
       var forceAuth = false;
       var registered = false;
+      // These are needed to check permissions against specific forms.
+      var formAccess = {};
       return {
         setForceAuth: function (force) {
           forceAuth = force;
@@ -615,6 +620,12 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
         setStates: function (anon, auth) {
           anonState = anon;
           authState = auth;
+        },
+        setAnonRole: function(role) {
+          anonRole = role;
+        },
+        setAppUrl: function(url) {
+          appUrl = url;
         },
         register: function (name, resource, path) {
           if (!registered) {
@@ -656,6 +667,16 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
                     $state) {
             return {
               init: function () {
+                init = true;
+                // Format the roles and access for easy usage.
+                (new Formio(appUrl + '/form')).loadForms({params:{limit: 9999999}}).then(function (forms) {
+                  forms.forEach(function(form) {
+                    formAccess[form.name] = {};
+                    form.submissionAccess.forEach(function(access) {
+                      formAccess[form.name][access.type] = access.roles;
+                    });
+                  });
+                });
                 $rootScope.user = {};
                 $rootScope.isRole = function (role) {
                   return $rootScope.role === role.toLowerCase();
@@ -685,6 +706,41 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
                     user: $rootScope.user,
                     role: $rootScope.role
                   });
+                };
+
+                $rootScope.hasAccess = function(form, permissions) {
+                  // Bypass if using an alternative Auth system.
+                  if (!init) {
+                    return true;
+                  }
+
+                  // Allow single permission or array of permissions.
+                  if (!Array.isArray(permissions)) {
+                    permissions = [permissions];
+                  }
+
+                  // Check that the formAccess has been initialized.
+                  if (!formAccess[form]) {
+                    return false;
+                  }
+                  var hasAccess = false;
+                  permissions.forEach(function(permission) {
+                    // Check for anonymous users. Must set anonRole.
+                    if (!$rootScope.user) {
+                      if (formAccess[form][permission].indexOf(anonRole) !== -1) {
+                        hasAccess = true;
+                      }
+                    }
+                    else {
+                      // Check the user's roles for access.
+                      $rootScope.user.roles.forEach(function(role) {
+                        if (formAccess[form][permission].indexOf(role) !== -1) {
+                          hasAccess = true;
+                        }
+                      });
+                    }
+                  });
+                  return hasAccess;
                 };
 
                 // Set the current user object and role.
@@ -796,7 +852,7 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
 
       /**** RESOURCE TEMPLATES *******/
       $templateCache.put('formio-helper/resource/resource.html',
-        "<h2>{{ currentResource.name | capitalize }}</h2>\n<ul class=\"nav nav-tabs\">\n  <li role=\"presentation\" ng-class=\"{active:isActive(currentResource.name + '.view')}\"><a ui-sref=\"{{ currentResource.name }}.view()\">View</a></li>\n  <li role=\"presentation\" ng-class=\"{active:isActive(currentResource.name + '.edit')}\"><a ui-sref=\"{{ currentResource.name }}.edit()\">Edit</a></li>\n  <li role=\"presentation\" ng-class=\"{active:isActive(currentResource.name + '.delete')}\"><a ui-sref=\"{{ currentResource.name }}.delete()\">Delete</a></li>\n</ul>\n<div ui-view></div>\n"
+        "<h2>{{ currentResource.name | capitalize }}</h2>\n<ul class=\"nav nav-tabs\">\n  <li role=\"presentation\" ng-class=\"{active:isActive(currentResource.name + '.view')}\" ng-if=\"hasAccess(currentResource.name, ['read_all', 'read_own'])\"><a ui-sref=\"{{ currentResource.name }}.view()\">View</a></li>\n  <li role=\"presentation\" ng-class=\"{active:isActive(currentResource.name + '.edit')}\" ng-if=\"hasAccess(currentResource.name, ['update_all', 'update_own'])\"><a ui-sref=\"{{ currentResource.name }}.edit()\">Edit</a></li>\n  <li role=\"presentation\" ng-class=\"{active:isActive(currentResource.name + '.delete')}\" ng-if=\"hasAccess(currentResource.name, ['delete_all', 'delete_own'])\"><a ui-sref=\"{{ currentResource.name }}.delete()\">Delete</a></li>\n</ul>\n<div ui-view></div>\n"
       );
 
       $templateCache.put('formio-helper/resource/create.html',
@@ -812,7 +868,7 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
       );
 
       $templateCache.put('formio-helper/resource/index.html',
-        "<formio-grid src=\"currentResource.formUrl\" columns=\"currentResource.columns\" grid-options=\"currentResource.gridOptions\"></formio-grid><br/>\n<a ui-sref=\"{{ currentResource.name }}Create()\" class=\"btn btn-primary\"><span class=\"glyphicon glyphicon-plus\" aria-hidden=\"true\"></span> New {{ currentResource.name | capitalize }}</a>\n"
+        "<formio-grid src=\"currentResource.formUrl\" columns=\"currentResource.columns\" grid-options=\"currentResource.gridOptions\"></formio-grid><br/>\n<a ui-sref=\"{{ currentResource.name }}Create()\" class=\"btn btn-primary\" ng-if=\"hasAccess(currentResource.name, 'create_own')\"><span class=\"glyphicon glyphicon-plus\" aria-hidden=\"true\"></span> New {{ currentResource.name | capitalize }}</a>\n"
       );
 
       $templateCache.put('formio-helper/resource/view.html',
