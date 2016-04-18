@@ -602,10 +602,15 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
   .provider('FormioAuth', [
     '$stateProvider',
     function ($stateProvider) {
+      var init = false;
       var anonState = 'auth.login';
+      var anonRole = false;
+      var appUrl = '';
       var authState = 'home';
       var forceAuth = false;
       var registered = false;
+      // These are needed to check permissions against specific forms.
+      var formAccess = {};
       return {
         setForceAuth: function (force) {
           forceAuth = force;
@@ -613,6 +618,12 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
         setStates: function (anon, auth) {
           anonState = anon;
           authState = auth;
+        },
+        setAnonRole: function(role) {
+          anonRole = role;
+        },
+        setAppUrl: function(url) {
+          appUrl = url;
         },
         register: function (name, resource, path) {
           if (!registered) {
@@ -654,6 +665,16 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
                     $state) {
             return {
               init: function () {
+                init = true;
+                // Format the roles and access for easy usage.
+                (new Formio(appUrl + '/form')).loadForms({params:{limit: 9999999}}).then(function (forms) {
+                  forms.forEach(function(form) {
+                    formAccess[form.name] = {};
+                    form.submissionAccess.forEach(function(access) {
+                      formAccess[form.name][access.type] = access.roles;
+                    });
+                  });
+                });
                 $rootScope.user = {};
                 $rootScope.isRole = function (role) {
                   return $rootScope.role === role.toLowerCase();
@@ -684,6 +705,41 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
                     user: $rootScope.user,
                     role: $rootScope.role
                   });
+                };
+
+                $rootScope.hasAccess = function(form, permissions) {
+                  // Bypass if using an alternative Auth system.
+                  if (!init) {
+                    return true;
+                  }
+
+                  // Allow single permission or array of permissions.
+                  if (!Array.isArray(permissions)) {
+                    permissions = [permissions];
+                  }
+
+                  // Check that the formAccess has been initialized.
+                  if (!formAccess[form]) {
+                    return false;
+                  }
+                  var hasAccess = false;
+                  permissions.forEach(function(permission) {
+                    // Check for anonymous users. Must set anonRole.
+                    if (!$rootScope.user) {
+                      if (formAccess[form][permission].indexOf(anonRole) !== -1) {
+                        hasAccess = true;
+                      }
+                    }
+                    else {
+                      // Check the user's roles for access.
+                      $rootScope.user.roles.forEach(function(role) {
+                        if (formAccess[form][permission].indexOf(role) !== -1) {
+                          hasAccess = true;
+                        }
+                      });
+                    }
+                  });
+                  return hasAccess;
                 };
 
                 // Set the current user object and role.
