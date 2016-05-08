@@ -745,8 +745,9 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
                 };
 
                 if (!$rootScope.user) {
-                  Formio.currentUser().then(function (user) {
+                  $rootScope.userPromise = Formio.currentUser().then(function (user) {
                     $rootScope.setUser(user, localStorage.getItem('formioRole'));
+                    return user;
                   });
                 }
 
