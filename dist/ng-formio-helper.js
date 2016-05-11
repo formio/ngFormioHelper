@@ -677,7 +677,7 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
                     });
                   });
                 });
-                $rootScope.user = {};
+                $rootScope.user = null;
                 $rootScope.isRole = function (role) {
                   return $rootScope.role === role.toLowerCase();
                 };
@@ -689,7 +689,8 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
                   else {
                     $rootScope.user = null;
                     localStorage.removeItem('formioAppUser');
-                    localStorage.removeItem('formioUser');
+                    Formio.clearCache();
+                    Formio.setUser(null);
                   }
 
                   if (!role) {
@@ -743,16 +744,10 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
                   return hasAccess;
                 };
 
-                // Set the current user object and role.
-                var user = localStorage.getItem('formioAppUser');
-                $rootScope.setUser(
-                  user ? angular.fromJson(user) : null,
-                  localStorage.getItem('formioAppRole')
-                );
-
                 if (!$rootScope.user) {
-                  Formio.currentUser().then(function (user) {
+                  $rootScope.userPromise = Formio.currentUser().then(function (user) {
                     $rootScope.setUser(user, localStorage.getItem('formioRole'));
+                    return user;
                   });
                 }
 
