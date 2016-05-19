@@ -601,7 +601,8 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
   ])
   .provider('FormioAuth', [
     '$stateProvider',
-    function ($stateProvider) {
+    'FormioProvider',
+    function ($stateProvider, FormioProvider) {
       var init = false;
       var anonState = 'auth.login';
       var anonRole = false;
@@ -620,6 +621,9 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
         },
         setAnonRole: function(role) {
           anonRole = role;
+        },
+        setAppUrl: function(url) {
+          FormioProvider.setAppUrl(url);
         },
         register: function (name, resource, path) {
           if (!registered) {
