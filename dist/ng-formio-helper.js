@@ -603,11 +603,11 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
   ])
   .provider('FormioAuth', [
     '$stateProvider',
-    function ($stateProvider) {
+    'FormioProvider',
+    function ($stateProvider, FormioProvider) {
       var init = false;
       var anonState = 'auth.login';
       var anonRole = false;
-      var appUrl = '';
       var authState = 'home';
       var forceAuth = false;
       var registered = false;
@@ -625,7 +625,7 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
           anonRole = role;
         },
         setAppUrl: function(url) {
-          appUrl = url;
+          FormioProvider.setAppUrl(url);
         },
         register: function (name, resource, path) {
           if (!registered) {
@@ -669,7 +669,7 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
               init: function () {
                 init = true;
                 // Format the roles and access for easy usage.
-                (new Formio(appUrl + '/form')).loadForms({params:{limit: 9999999}}).then(function (forms) {
+                (new Formio(Formio.getAppUrl())).loadForms({params:{limit: 9999999}}).then(function (forms) {
                   forms.forEach(function(form) {
                     formAccess[form.name] = {};
                     form.submissionAccess.forEach(function(access) {
@@ -893,7 +893,7 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
       );
 
       $templateCache.put('formio-helper/submission/submission.html',
-        "<ul class=\"nav nav-pills\">\n    <li role=\"presentation\" ng-class=\"{active:isActive(formBase + 'form.submission.view')}\"><a ui-sref=\"{{ formBase }}form.submission.view()\">View</a></li>\n    <li role=\"presentation\" ng-class=\"{active:isActive(formBase + 'form.submission.edit')}\"><a ui-sref=\"{{ formBase }}form.submission.edit()\">Edit</a></li>\n    <li role=\"presentation\" ng-class=\"{active:isActive(formBase + 'form.submission.delete')}\"><a ui-sref=\"{{ formBase }}form.submission.delete()\">Delete</a></li>\n</ul>\n<div ui-view style=\"margin-top:20px;\"></div>\n"
+        "<ul class=\"nav nav-pills\">\n  <li role=\"presentation\" ng-class=\"{active:isActive(formBase + 'form.submission.view')}\"><a ui-sref=\"{{ formBase }}form.submission.view()\">View</a></li>\n  <li role=\"presentation\" ng-class=\"{active:isActive(formBase + 'form.submission.edit')}\"><a ui-sref=\"{{ formBase }}form.submission.edit()\">Edit</a></li>\n  <li role=\"presentation\" ng-class=\"{active:isActive(formBase + 'form.submission.delete')}\"><a ui-sref=\"{{ formBase }}form.submission.delete()\">Delete</a></li>\n</ul>\n<div ui-view style=\"margin-top:20px;\"></div>\n"
       );
 
       $templateCache.put('formio-helper/submission/view.html',
