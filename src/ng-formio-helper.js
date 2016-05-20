@@ -667,7 +667,7 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
               init: function () {
                 init = true;
                 // Format the roles and access for easy usage.
-                (new Formio(Formio.getAppUrl() + '/form')).loadForms({params:{limit: 9999999}}).then(function (forms) {
+                (new Formio(Formio.getAppUrl())).loadForms({params:{limit: 9999999}}).then(function (forms) {
                   forms.forEach(function(form) {
                     formAccess[form.name] = {};
                     form.submissionAccess.forEach(function(access) {
