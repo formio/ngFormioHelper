@@ -84,7 +84,7 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
                 ) {
                   $scope.baseName = baseName;
                   var gridQuery = {};
-                  if (parent) {
+                  if (parent && $stateParams.hasOwnProperty(parent + 'Id')) {
                     gridQuery['data.' + parent + '._id'] = $stateParams[parent + 'Id'];
                   }
                   $scope.currentResource = {
