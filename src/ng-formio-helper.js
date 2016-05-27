@@ -78,6 +78,7 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
                 function ($scope,
                           $state,
                           $controller) {
+                  $scope.baseName = baseName;
                   $scope.currentResource = {
                     name: name,
                     queryId: queryId,
@@ -117,6 +118,7 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
                 function ($scope,
                           $state,
                           $controller) {
+                  $scope.baseName = baseName;
                   $scope.currentResource = {
                     name: name,
                     queryId: queryId,
@@ -174,6 +176,7 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
                     submissionUrl += '/submission/' + $stateParams[queryId];
                   }
 
+                  $scope.baseName = baseName;
                   $scope.currentResource = $scope[name] = {
                     name: name,
                     queryId: queryId,
