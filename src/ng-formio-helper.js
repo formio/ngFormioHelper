@@ -74,16 +74,25 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
               controller: [
                 '$scope',
                 '$state',
+                '$stateParams',
                 '$controller',
-                function ($scope,
-                          $state,
-                          $controller) {
+                function (
+                  $scope,
+                  $state,
+                  $stateParams,
+                  $controller
+                ) {
                   $scope.baseName = baseName;
+                  var gridQuery = {};
+                  if (parent) {
+                    gridQuery['data.' + parent + '._id'] = $stateParams[parent + 'Id'];
+                  }
                   $scope.currentResource = {
                     name: name,
                     queryId: queryId,
                     formUrl: url,
                     columns: [],
+                    gridQuery: gridQuery,
                     gridOptions: {}
                   };
                   $scope.$on('rowView', function (event, submission) {
