@@ -74,30 +74,40 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
               controller: [
                 '$scope',
                 '$state',
+                '$stateParams',
                 '$controller',
-                function ($scope,
-                          $state,
-                          $controller) {
+                function (
+                  $scope,
+                  $state,
+                  $stateParams,
+                  $controller
+                ) {
+                  $scope.baseName = baseName;
+                  var gridQuery = {};
+                  if (parent && $stateParams.hasOwnProperty(parent + 'Id')) {
+                    gridQuery['data.' + parent + '._id'] = $stateParams[parent + 'Id'];
+                  }
                   $scope.currentResource = {
                     name: name,
                     queryId: queryId,
                     formUrl: url,
                     columns: [],
+                    gridQuery: gridQuery,
                     gridOptions: {}
                   };
                   $scope.$on('rowView', function (event, submission) {
-                    $state.go(name + '.view', query(submission));
+                    $state.go(baseName + '.view', query(submission));
                   });
                   $scope.$on('submissionView', function (event, submission) {
-                    $state.go(name + '.view', query(submission));
+                    $state.go(baseName + '.view', query(submission));
                   });
 
                   $scope.$on('submissionEdit', function (event, submission) {
-                    $state.go(name + '.edit', query(submission));
+                    $state.go(baseName + '.edit', query(submission));
                   });
 
                   $scope.$on('submissionDelete', function (event, submission) {
-                    $state.go(name + '.delete', query(submission));
+                    $state.go(baseName + '.delete', query(submission));
                   });
                   if (controllers.index) {
                     $controller(controllers.index, {$scope: $scope});
@@ -117,6 +127,7 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
                 function ($scope,
                           $state,
                           $controller) {
+                  $scope.baseName = baseName;
                   $scope.currentResource = {
                     name: name,
                     queryId: queryId,
@@ -143,7 +154,7 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
                   if (!handle) {
                     $scope.$on('formSubmission', function (event, submission) {
                       $scope.currentResource.resource = submission;
-                      $state.go(name + '.view', query(submission));
+                      $state.go(baseName + '.view', query(submission));
                     });
                   }
                 }
@@ -174,6 +185,7 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
                     submissionUrl += '/submission/' + $stateParams[queryId];
                   }
 
+                  $scope.baseName = baseName;
                   $scope.currentResource = $scope[name] = {
                     name: name,
                     queryId: queryId,
@@ -251,7 +263,7 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
                   if (!handle) {
                     $scope.$on('formSubmission', function (event, submission) {
                       $scope.currentResource.resource = submission;
-                      $state.go(name + '.view', query(submission));
+                      $state.go(baseName + '.view', query(submission));
                     });
                   }
                 }
@@ -285,7 +297,7 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
                       }
                     });
                     $scope.$on('cancel', function () {
-                      $state.go(name + 'Index');
+                      $state.go(baseName + 'Index');
                     });
                   }
                 }
