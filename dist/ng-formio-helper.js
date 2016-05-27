@@ -89,18 +89,18 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
                     gridOptions: {}
                   };
                   $scope.$on('rowView', function (event, submission) {
-                    $state.go(name + '.view', query(submission));
+                    $state.go(baseName + '.view', query(submission));
                   });
                   $scope.$on('submissionView', function (event, submission) {
-                    $state.go(name + '.view', query(submission));
+                    $state.go(baseName + '.view', query(submission));
                   });
 
                   $scope.$on('submissionEdit', function (event, submission) {
-                    $state.go(name + '.edit', query(submission));
+                    $state.go(baseName + '.edit', query(submission));
                   });
 
                   $scope.$on('submissionDelete', function (event, submission) {
-                    $state.go(name + '.delete', query(submission));
+                    $state.go(baseName + '.delete', query(submission));
                   });
                   if (controllers.index) {
                     $controller(controllers.index, {$scope: $scope});
@@ -147,7 +147,7 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
                   if (!handle) {
                     $scope.$on('formSubmission', function (event, submission) {
                       $scope.currentResource.resource = submission;
-                      $state.go(name + '.view', query(submission));
+                      $state.go(baseName + '.view', query(submission));
                     });
                   }
                 }
@@ -256,7 +256,7 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
                   if (!handle) {
                     $scope.$on('formSubmission', function (event, submission) {
                       $scope.currentResource.resource = submission;
-                      $state.go(name + '.view', query(submission));
+                      $state.go(baseName + '.view', query(submission));
                     });
                   }
                 }
@@ -290,7 +290,7 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
                       }
                     });
                     $scope.$on('cancel', function () {
-                      $state.go(name + 'Index');
+                      $state.go(baseName + 'Index');
                     });
                   }
                 }
@@ -850,7 +850,7 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
 
       /**** RESOURCE TEMPLATES *******/
       $templateCache.put('formio-helper/resource/resource.html',
-        "<h2>{{ currentResource.name | capitalize }}</h2>\n<ul class=\"nav nav-tabs\">\n  <li role=\"presentation\" ng-class=\"{active:isActive(currentResource.name + '.view')}\" ng-if=\"hasAccess(currentResource.name, ['read_all', 'read_own'])\"><a ui-sref=\"{{ currentResource.name }}.view()\">View</a></li>\n  <li role=\"presentation\" ng-class=\"{active:isActive(currentResource.name + '.edit')}\" ng-if=\"hasAccess(currentResource.name, ['update_all', 'update_own'])\"><a ui-sref=\"{{ currentResource.name }}.edit()\">Edit</a></li>\n  <li role=\"presentation\" ng-class=\"{active:isActive(currentResource.name + '.delete')}\" ng-if=\"hasAccess(currentResource.name, ['delete_all', 'delete_own'])\"><a ui-sref=\"{{ currentResource.name }}.delete()\">Delete</a></li>\n</ul>\n<div ui-view></div>\n"
+        "<h2>{{ currentResource.name | capitalize }}</h2>\n<ul class=\"nav nav-tabs\">\n  <li role=\"presentation\" ng-class=\"{active:isActive(currentResource.name + '.view')}\" ng-if=\"hasAccess(currentResource.name, ['read_all', 'read_own'])\"><a ui-sref=\"{{ baseName }}.view()\">View</a></li>\n  <li role=\"presentation\" ng-class=\"{active:isActive(currentResource.name + '.edit')}\" ng-if=\"hasAccess(currentResource.name, ['update_all', 'update_own'])\"><a ui-sref=\"{{ baseName }}.edit()\">Edit</a></li>\n  <li role=\"presentation\" ng-class=\"{active:isActive(currentResource.name + '.delete')}\" ng-if=\"hasAccess(currentResource.name, ['delete_all', 'delete_own'])\"><a ui-sref=\"{{ baseName }}.delete()\">Delete</a></li>\n</ul>\n<div ui-view></div>\n"
       );
 
       $templateCache.put('formio-helper/resource/create.html',
