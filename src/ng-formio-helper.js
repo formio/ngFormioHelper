@@ -352,6 +352,17 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
           var templates = options.templates ? options.templates : {};
           var controllers = options.controllers ? options.controllers : {};
           var fields = (typeof options.field === 'string') ? [options.field] : options.field;
+
+          // Normalize the fields properties.
+          fields = _.map(fields, function(field) {
+            if (typeof field === 'string') {
+              return {
+                name: field,
+                stateParam: field + 'Id'
+              };
+            }
+            return field;
+          });
           var basePath = options.base ? options.base : '';
           if (!basePath) {
             basePath = name ? name + '.' : '';
@@ -420,11 +431,13 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
                   $scope.submission = {data: {}};
                   var handle = false;
                   if (fields && fields.length) {
-                    $scope.hideComponents = fields;
+                    $scope.hideComponents = _.map(fields, function(field) {
+                      return field.name;
+                    });
                     $scope.currentForm.promise.then(function () {
                       fields.forEach(function (field) {
                         $scope[field].loadSubmissionPromise.then(function (resource) {
-                          $scope.submission.data[field] = resource;
+                          _.set($scope.submission.data, field.name, resource);
                         });
                       });
                     });
@@ -460,7 +473,7 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
                   $scope.submissionColumns = [];
                   if (fields && fields.length) {
                     fields.forEach(function (field) {
-                      $scope.submissionQuery['data.' + field + '._id'] = $stateParams[field + 'Id'];
+                      $scope.submissionQuery['data.' + field.name + '._id'] = $stateParams[field.stateParam];
                     });
                   }
 
@@ -486,7 +499,7 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
                         if (!component.key || !component.input || !component.tableView) {
                           return;
                         }
-                        if (fields && fields.length && (fields.indexOf(component.key) !== -1)) {
+                        if (fields && fields.length && !_.find(fields, {name: component.key})) {
                           return;
                         }
                         $scope.submissionColumns.push(component.key);
