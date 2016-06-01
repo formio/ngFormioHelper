@@ -40,6 +40,10 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
           options = options || {};
           resources[name] = options.title || name;
           var parent = (options && options.parent) ? options.parent : null;
+          var parents = (options && options.parents) ? options.parents : [];
+          if ((!parents || !parents.length) && parent) {
+            parents = [parent];
+          }
           var queryId = name + 'Id';
           options.base = options.base || '';
           var baseName = options.base + name;
@@ -68,7 +72,6 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
           $stateProvider
             .state(baseName + 'Index', options.alter.index({
               url: '/' + name + queryParams,
-              parent: parent ? parent : null,
               params: options.params && options.params.index,
               templateUrl: templates.index ? templates.index : 'formio-helper/resource/index.html',
               controller: [
@@ -84,8 +87,12 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
                 ) {
                   $scope.baseName = baseName;
                   var gridQuery = {};
-                  if (parent && $stateParams.hasOwnProperty(parent + 'Id')) {
-                    gridQuery['data.' + parent + '._id'] = $stateParams[parent + 'Id'];
+                  if (parents.length) {
+                    parents.forEach(function(parent) {
+                      if ($stateParams.hasOwnProperty(parent + 'Id')) {
+                        gridQuery['data.' + parent + '._id'] = $stateParams[parent + 'Id'];
+                      }
+                    });
                   }
                   $scope.currentResource = {
                     name: name,
@@ -117,7 +124,6 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
             }))
             .state(baseName + 'Create', options.alter.create({
               url: '/create/' + name + queryParams,
-              parent: parent ? parent : null,
               params: options.params && options.params.create,
               templateUrl: templates.create ? templates.create : 'formio-helper/resource/create.html',
               controller: [
@@ -140,15 +146,17 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
                     var ctrl = $controller(controllers.create, {$scope: $scope});
                     handle = (ctrl.handle || false);
                   }
-                  if (parent) {
+                  if (parents.length) {
                     if (!$scope.hideComponents) {
                       $scope.hideComponents = [];
                     }
-                    $scope.hideComponents.push(parent);
+                    $scope.hideComponents = $scope.hideComponents.concat(parents);
 
                     // Auto populate the parent entity with the new data.
-                    $scope[parent].loadSubmissionPromise.then(function (entity) {
-                      $scope.submission.data[parent] = entity;
+                    parents.forEach(function(parent) {
+                      $scope[parent].loadSubmissionPromise.then(function (entity) {
+                        $scope.submission.data[parent] = entity;
+                      });
                     });
                   }
                   if (!handle) {
@@ -163,7 +171,6 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
             .state(baseName, options.alter.abstract({
               abstract: true,
               url: '/' + name + '/:' + queryId,
-              parent: parent ? parent : null,
               templateUrl: templates.abstract ? templates.abstract : 'formio-helper/resource/resource.html',
               controller: [
                 '$scope',
@@ -195,7 +202,7 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
                     resource: {},
                     form: {},
                     href: '/#/' + name + '/' + $stateParams[queryId] + '/',
-                    parent: parent ? $scope[parent] : {href: '/#/', name: 'home'}
+                    parent: (parents.length === 1) ? $scope[parents[0]] : {href: '/#/', name: 'home'}
                   };
 
                   $scope.currentResource.loadFormPromise = $scope.currentResource.formio.loadForm().then(function (form) {
@@ -229,7 +236,6 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
             }))
             .state(baseName + '.view', options.alter.view({
               url: '/',
-              parent: baseName,
               params: options.params && options.params.view,
               templateUrl: templates.view ? templates.view : 'formio-helper/resource/view.html',
               controller: [
@@ -245,7 +251,6 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
             }))
             .state(baseName + '.edit', options.alter.edit({
               url: '/edit',
-              parent: baseName,
               params: options.params && options.params.edit,
               templateUrl: templates.edit ? templates.edit : 'formio-helper/resource/edit.html',
               controller: [
@@ -271,7 +276,6 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
             }))
             .state(baseName + '.delete', options.alter.delete({
               url: '/delete',
-              parent: baseName,
               params: options.params && options.params.delete,
               templateUrl: templates.delete ? templates.delete : 'formio-helper/resource/delete.html',
               controller: [
@@ -289,8 +293,8 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
                   }
                   if (!handle) {
                     $scope.$on('delete', function () {
-                      if (parent && parent !== 'home') {
-                        $state.go(parent + '.view');
+                      if ((parents.length === 1) && parents[0] !== 'home') {
+                        $state.go(parents[0] + '.view');
                       }
                       else {
                         $state.go('home', null, {reload: true});
