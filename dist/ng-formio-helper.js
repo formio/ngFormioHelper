@@ -638,6 +638,7 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
       var registered = false;
       // These are needed to check permissions against specific forms.
       var formAccess = {};
+      var roles = {};
       return {
         setForceAuth: function (force) {
           forceAuth = force;
@@ -686,26 +687,86 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
           'FormioAlerts',
           '$rootScope',
           '$state',
-          function (Formio,
-                    FormioAlerts,
-                    $rootScope,
-                    $state) {
+          '$http',
+          '$q',
+          function (
+            Formio,
+            FormioAlerts,
+            $rootScope,
+            $state,
+            $http,
+            $q
+          ) {
             return {
               init: function () {
                 init = true;
-                // Format the roles and access for easy usage.
-                (new Formio(Formio.getAppUrl())).loadForms({params:{limit: 9999999}}).then(function (forms) {
-                  forms.forEach(function(form) {
+
+                // Get the access for this project.
+                $rootScope.accessPromise = $http.get(Formio.getAppUrl() + '/access').then(function(result) {
+                  var access = result.data;
+                  angular.forEach(access.forms, function(form) {
                     formAccess[form.name] = {};
                     form.submissionAccess.forEach(function(access) {
                       formAccess[form.name][access.type] = access.roles;
                     });
                   });
+                  roles = access.roles;
+                  return access;
                 });
+
                 $rootScope.user = null;
+                $rootScope.isReady = false;
+                $rootScope.userPromise = Formio.currentUser().then(function (user) {
+                  $rootScope.setUser(user, localStorage.getItem('formioRole'));
+                  return user;
+                });
+
+                // Return if the user has a specific role.
+                $rootScope.hasRole = function(roleName) {
+                  roleName = roleName.toLowerCase();
+                  if (!$rootScope.user) {
+                    return (roleName === 'anonymous');
+                  }
+                  if (roles[roleName]) {
+                    return $rootScope.user.roles.indexOf(roles[roleName]._id) !== -1;
+                  }
+                  return false;
+                };
+                $rootScope.ifRole = function(roleName) {
+                  return $rootScope.whenReady.then(function() {
+                    return $rootScope.isAdmin || $rootScope.hasRole(roleName);
+                  });
+                };
+
+                // Assign the roles to the user.
+                $rootScope.assignRoles = function() {
+                  $rootScope.whenReady.then(function() {
+                    for (var roleName in roles) {
+                      if (roles[roleName].admin) {
+                        $rootScope['is' + roles[roleName].title] = $rootScope.isAdmin = $rootScope.hasRole(roleName);
+                        if ($rootScope.isAdmin) {
+                          break;
+                        }
+                      }
+                    }
+                    for (var roleName in roles) {
+                      if (!roles[roleName].admin) {
+                        $rootScope['is' + roles[roleName].title] = ($rootScope.isAdmin || $rootScope.hasRole(roleName));
+                      }
+                    }
+                  });
+                };
+
+                // Create a promise that loads when everything is ready.
+                $rootScope.whenReady = $rootScope.accessPromise.then($rootScope.userPromise).then(function() {
+                  $rootScope.isReady = true;
+                });
+
+                // @todo - Deprecate this call...
                 $rootScope.isRole = function (role) {
                   return $rootScope.role === role.toLowerCase();
                 };
+
                 $rootScope.setUser = function (user, role) {
                   if (user) {
                     $rootScope.user = user;
@@ -727,6 +788,7 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
                     localStorage.setItem('formioAppRole', role);
                   }
 
+                  $rootScope.assignRoles();
                   $rootScope.authenticated = !!Formio.getToken();
                   $rootScope.$emit('user', {
                     user: $rootScope.user,
@@ -749,6 +811,12 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
                   if (!formAccess[form]) {
                     return false;
                   }
+
+                  // If the user is an admin, then they always have access.
+                  if ($rootScope.isAdmin) {
+                    return true;
+                  }
+
                   var hasAccess = false;
                   permissions.forEach(function(permission) {
                     // Check for anonymous users. Must set anonRole.
@@ -768,13 +836,11 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
                   });
                   return hasAccess;
                 };
-
-                if (!$rootScope.user) {
-                  $rootScope.userPromise = Formio.currentUser().then(function (user) {
-                    $rootScope.setUser(user, localStorage.getItem('formioRole'));
-                    return user;
+                $rootScope.ifAccess = function(form, permissions) {
+                  return $rootScope.whenReady.then(function() {
+                    return $rootScope.hasAccess(form, permissions);
                   });
-                }
+                };
 
                 var logoutError = function () {
                   $rootScope.setUser(null, null);
@@ -872,7 +938,7 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
 
       /**** RESOURCE TEMPLATES *******/
       $templateCache.put('formio-helper/resource/resource.html',
-        "<h2>{{ currentResource.name | capitalize }}</h2>\n<ul class=\"nav nav-tabs\">\n  <li role=\"presentation\" ng-class=\"{active:isActive(currentResource.name + '.view')}\" ng-if=\"hasAccess(currentResource.name, ['read_all', 'read_own'])\"><a ui-sref=\"{{ baseName }}.view()\">View</a></li>\n  <li role=\"presentation\" ng-class=\"{active:isActive(currentResource.name + '.edit')}\" ng-if=\"hasAccess(currentResource.name, ['update_all', 'update_own'])\"><a ui-sref=\"{{ baseName }}.edit()\">Edit</a></li>\n  <li role=\"presentation\" ng-class=\"{active:isActive(currentResource.name + '.delete')}\" ng-if=\"hasAccess(currentResource.name, ['delete_all', 'delete_own'])\"><a ui-sref=\"{{ baseName }}.delete()\">Delete</a></li>\n</ul>\n<div ui-view></div>\n"
+        "<h2>{{ currentResource.name | capitalize }}</h2>\n<ul class=\"nav nav-tabs\" ng-if=\"isReady\">\n  <li role=\"presentation\" ng-class=\"{active:isActive(currentResource.name + '.view')}\" ng-if=\"hasAccess(currentResource.name, ['read_all', 'read_own'])\"><a ui-sref=\"{{ baseName }}.view()\">View</a></li>\n  <li role=\"presentation\" ng-class=\"{active:isActive(currentResource.name + '.edit')}\" ng-if=\"hasAccess(currentResource.name, ['update_all', 'update_own'])\"><a ui-sref=\"{{ baseName }}.edit()\">Edit</a></li>\n  <li role=\"presentation\" ng-class=\"{active:isActive(currentResource.name + '.delete')}\" ng-if=\"hasAccess(currentResource.name, ['delete_all', 'delete_own'])\"><a ui-sref=\"{{ baseName }}.delete()\">Delete</a></li>\n</ul>\n<div ui-view></div>\n"
       );
 
       $templateCache.put('formio-helper/resource/create.html',
@@ -888,7 +954,7 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
       );
 
       $templateCache.put('formio-helper/resource/index.html',
-        "<formio-grid src=\"currentResource.formUrl\" columns=\"currentResource.columns\" query=\"currentResource.gridQuery\" grid-options=\"currentResource.gridOptions\"></formio-grid><br/>\n<a ui-sref=\"{{ baseName }}Create()\" class=\"btn btn-primary\" ng-if=\"hasAccess(currentResource.name, 'create_own')\"><span class=\"glyphicon glyphicon-plus\" aria-hidden=\"true\"></span> New {{ currentResource.name | capitalize }}</a>\n"
+        "<formio-grid src=\"currentResource.formUrl\" columns=\"currentResource.columns\" query=\"currentResource.gridQuery\" grid-options=\"currentResource.gridOptions\"></formio-grid><br/>\n<a ui-sref=\"{{ baseName }}Create()\" class=\"btn btn-primary\" ng-if=\"isReady && hasAccess(currentResource.name, 'create_own')\"><span class=\"glyphicon glyphicon-plus\" aria-hidden=\"true\"></span> New {{ currentResource.name | capitalize }}</a>\n"
       );
 
       $templateCache.put('formio-helper/resource/view.html',
