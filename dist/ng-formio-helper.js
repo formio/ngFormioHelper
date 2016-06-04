@@ -442,7 +442,7 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
                     });
                     $scope.currentForm.promise.then(function () {
                       fields.forEach(function (field) {
-                        $scope[field].loadSubmissionPromise.then(function (resource) {
+                        $scope[field.name].loadSubmissionPromise.then(function (resource) {
                           _.set($scope.submission.data, field.name, resource);
                         });
                       });
@@ -979,7 +979,7 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
       );
 
       $templateCache.put('formio-helper/form/view.html',
-        "<formio form=\"currentForm.form\" form-action=\"currentForm.url + '/submission'\" submission=\"submission\"></formio>\n"
+        "<formio form=\"currentForm.form\" form-action=\"currentForm.url + '/submission'\" submission=\"submission\" hide-components=\"hideComponents\"></formio>\n"
       );
 
       /**** SUBMISSION TEMPLATES *******/
