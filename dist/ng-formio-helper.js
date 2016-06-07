@@ -827,7 +827,6 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
                     else {
                       // Check the user's roles for access.
                       $rootScope.user.roles.forEach(function(role) {
-                        console.log(role);
                         if (formAccess[form][permission].indexOf(role) !== -1) {
                           hasAccess = true;
                         }
