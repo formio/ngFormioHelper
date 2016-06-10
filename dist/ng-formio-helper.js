@@ -754,7 +754,7 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
                     }
                     for (var roleName in roles) {
                       if (!roles[roleName].admin) {
-                        $rootScope['is' + roles[roleName].title] = ($rootScope.isAdmin || $rootScope.hasRole(roleName));
+                        $rootScope['is' + roles[roleName].title] = $rootScope.hasRole(roleName);
                       }
                     }
                   });
@@ -763,6 +763,7 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
                 // Create a promise that loads when everything is ready.
                 $rootScope.whenReady = $rootScope.accessPromise.then($rootScope.userPromise).then(function() {
                   $rootScope.isReady = true;
+                  return true;
                 });
 
                 // @todo - Deprecate this call...

@@ -20,10 +20,10 @@
     "styles.css"
   ],
   "dependencies": {
-    "angular-ui-router": "^0.3.0",
+    "angular-ui-router": "^0.3.1",
     "lodash": "^4.13.1",
-    "ng-formio": "^1.8.6",
-    "ng-formio-grid": "^0.7.0"
+    "ng-formio": "^1.8.12",
+    "ng-formio-grid": "^0.7.2"
   },
   "main": "dist/ng-formio-helper.js"
 }
