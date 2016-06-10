@@ -815,11 +815,6 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
                     return false;
                   }
 
-                  // If the user is an admin, then they always have access.
-                  if ($rootScope.isAdmin) {
-                    return true;
-                  }
-
                   var hasAccess = false;
                   permissions.forEach(function(permission) {
                     // Check for anonymous users. Must set anonRole.
