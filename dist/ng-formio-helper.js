@@ -706,8 +706,7 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
                 init = true;
 
                 // Get the access for this project.
-                $rootScope.accessPromise = $http.get(Formio.getAppUrl() + '/access').then(function(result) {
-                  var access = result.data;
+                $rootScope.accessPromise = Formio.makeStaticRequest(Formio.getAppUrl() + '/access').then(function(access) {
                   angular.forEach(access.forms, function(form) {
                     formAccess[form.name] = {};
                     form.submissionAccess.forEach(function(access) {
