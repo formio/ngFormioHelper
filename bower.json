@@ -16,7 +16,6 @@
     "test",
     "tests",
     "formio-wizard-form.png",
-    "index.html",
     "styles.css"
   ],
   "dependencies": {
