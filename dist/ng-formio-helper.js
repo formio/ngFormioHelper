@@ -743,26 +743,25 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
 
                 // Assign the roles to the user.
                 $rootScope.assignRoles = function() {
-                  $rootScope.whenReady.then(function() {
-                    for (var roleName in roles) {
-                      if (roles[roleName].admin) {
-                        $rootScope['is' + roles[roleName].title] = $rootScope.isAdmin = $rootScope.hasRole(roleName);
-                        if ($rootScope.isAdmin) {
-                          break;
-                        }
+                  for (var roleName in roles) {
+                    if (roles[roleName].admin) {
+                      $rootScope['is' + roles[roleName].title] = $rootScope.isAdmin = $rootScope.hasRole(roleName);
+                      if ($rootScope.isAdmin) {
+                        break;
                       }
                     }
-                    for (var roleName in roles) {
-                      if (!roles[roleName].admin) {
-                        $rootScope['is' + roles[roleName].title] = $rootScope.hasRole(roleName);
-                      }
+                  }
+                  for (var roleName in roles) {
+                    if (!roles[roleName].admin) {
+                      $rootScope['is' + roles[roleName].title] = $rootScope.hasRole(roleName);
                     }
-                  });
+                  }
                 };
 
                 // Create a promise that loads when everything is ready.
                 $rootScope.whenReady = $rootScope.accessPromise.then($rootScope.userPromise).then(function() {
                   $rootScope.isReady = true;
+                  $rootScope.assignRoles();
                   return true;
                 });
 
@@ -791,8 +790,6 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
                     $rootScope.role = role.toLowerCase();
                     localStorage.setItem('formioAppRole', role);
                   }
-
-                  $rootScope.assignRoles();
                   $rootScope.authenticated = !!Formio.getToken();
                   $rootScope.$emit('user', {
                     user: $rootScope.user,
