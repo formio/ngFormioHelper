@@ -791,6 +791,7 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
                     localStorage.setItem('formioAppRole', role);
                   }
                   $rootScope.authenticated = !!Formio.getToken();
+                  $rootScope.assignRoles();
                   $rootScope.$emit('user', {
                     user: $rootScope.user,
                     role: $rootScope.role
