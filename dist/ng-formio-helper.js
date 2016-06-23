@@ -263,6 +263,12 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
                           $state,
                           $controller) {
                   var handle = false;
+                  if (parents.length) {
+                    if (!$scope.hideComponents) {
+                      $scope.hideComponents = [];
+                    }
+                    $scope.hideComponents = $scope.hideComponents.concat(parents);
+                  }
                   if (controllers.edit) {
                     var ctrl = $controller(controllers.edit, {$scope: $scope});
                     handle = (ctrl.handle || false);
@@ -947,7 +953,7 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
       );
 
       $templateCache.put('formio-helper/resource/edit.html',
-        "<formio src=\"currentResource.submissionUrl\"></formio>\n"
+        "<formio src=\"currentResource.submissionUrl\" hide-components=\"hideComponents\"></formio>\n"
       );
 
       $templateCache.put('formio-helper/resource/index.html',

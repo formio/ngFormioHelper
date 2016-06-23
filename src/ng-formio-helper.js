@@ -261,6 +261,12 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
                           $state,
                           $controller) {
                   var handle = false;
+                  if (parents.length) {
+                    if (!$scope.hideComponents) {
+                      $scope.hideComponents = [];
+                    }
+                    $scope.hideComponents = $scope.hideComponents.concat(parents);
+                  }
                   if (controllers.edit) {
                     var ctrl = $controller(controllers.edit, {$scope: $scope});
                     handle = (ctrl.handle || false);
