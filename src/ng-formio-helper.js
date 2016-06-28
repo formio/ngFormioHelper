@@ -758,7 +758,7 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
                   }
                   for (var roleName in roles) {
                     if (roles[roleName].admin) {
-                      $rootScope['is' + roles[roleName].title] = $rootScope.isAdmin = $rootScope.hasRole(roleName);
+                      $rootScope['is' + roles[roleName].title.replace(/\s/g, '')] = $rootScope.isAdmin = $rootScope.hasRole(roleName);
                       if ($rootScope.isAdmin) {
                         break;
                       }
@@ -766,7 +766,7 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
                   }
                   for (var roleName in roles) {
                     if (!roles[roleName].admin) {
-                      $rootScope['is' + roles[roleName].title] = $rootScope.hasRole(roleName);
+                      $rootScope['is' + roles[roleName].title.replace(/\s/g, '')] = $rootScope.hasRole(roleName);
                     }
                   }
                 };
