@@ -697,6 +697,7 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
           'FormioAlerts',
           '$rootScope',
           '$state',
+          '$stateParams',
           '$http',
           '$q',
           function (
@@ -704,6 +705,7 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
             FormioAlerts,
             $rootScope,
             $state,
+            $stateParams,
             $http,
             $q
           ) {
@@ -721,6 +723,9 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
                   });
                   roles = access.roles;
                   return access;
+                }, function(err) {
+                  roles = {};
+                  return null;
                 });
 
                 $rootScope.user = null;
@@ -749,6 +754,10 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
 
                 // Assign the roles to the user.
                 $rootScope.assignRoles = function() {
+                  if (!roles) {
+                    $rootScope.isAdmin = false;
+                    return false;
+                  }
                   for (var roleName in roles) {
                     if (roles[roleName].admin) {
                       $rootScope['is' + roles[roleName].title] = $rootScope.isAdmin = $rootScope.hasRole(roleName);
@@ -848,7 +857,11 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
                 var logoutError = function () {
                   $rootScope.setUser(null, null);
                   localStorage.removeItem('formioToken');
-                  $state.go(anonState, {}, {reload: true});
+                  $state.go(anonState, $stateParams, {
+                    reload: true,
+                    inherit: false,
+                    notify: true
+                  });
                   FormioAlerts.addAlert({
                     type: 'danger',
                     message: 'Your session has expired. Please log in again.'
@@ -856,13 +869,19 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
                 };
 
                 $rootScope.$on('formio.sessionExpired', logoutError);
+                Formio.events.on('formio.badToken', logoutError);
+                Formio.events.on('formio.sessionExpired', logoutError);
 
                 // Trigger when a logout occurs.
                 $rootScope.logout = function () {
                   $rootScope.setUser(null, null);
                   localStorage.removeItem('formioToken');
                   Formio.logout().then(function () {
-                    $state.go(anonState, {}, {reload: true});
+                    $state.go(anonState, $stateParams, {
+                      reload: true,
+                      inherit: false,
+                      notify: true
+                    });
                   }).catch(logoutError);
                 };
 
