@@ -446,7 +446,9 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
                     });
                     $scope.currentForm.promise.then(function () {
                       fields.forEach(function (field) {
-                        $scope[field.name].loadSubmissionPromise.then(function (resource) {
+                        var parts = field.name.split('.');
+                        var fieldName = parts[parts.length - 1];
+                        $scope[fieldName].loadSubmissionPromise.then(function (resource) {
                           _.set($scope.submission.data, field.name, resource);
                         });
                       });
@@ -642,14 +644,19 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
       var anonState = 'auth.login';
       var anonRole = false;
       var authState = 'home';
-      var forceAuth = false;
+      var allowedStates = [];
       var registered = false;
       // These are needed to check permissions against specific forms.
       var formAccess = {};
       var roles = {};
       return {
-        setForceAuth: function (force) {
-          forceAuth = force;
+        setForceAuth: function (allowed) {
+          if (typeof allowed === 'boolean') {
+            allowedStates = allowed ? ['auth'] : [];
+          }
+          else {
+            allowedStates = allowed;
+          }
         },
         setStates: function (anon, auth) {
           anonState = anon;
@@ -886,14 +893,24 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
                 // Ensure they are logged.
                 $rootScope.$on('$stateChangeStart', function (event, toState) {
                   $rootScope.authenticated = !!Formio.getToken();
-                  if (forceAuth) {
-                    if (toState.name.substr(0, 4) === 'auth') {
+                  if ($rootScope.authenticated) {
+                    return;
+                  }
+                  if (allowedStates.length) {
+                    var allowed = false;
+                    for (var i in allowedStates) {
+                      if (toState.name.indexOf(allowedStates[i]) === 0) {
+                        allowed = true;
+                        break;
+                      }
+                    }
+
+                    if (allowed) {
                       return;
                     }
-                    if (!$rootScope.authenticated) {
-                      event.preventDefault();
-                      $state.go(anonState, {}, {reload: true});
-                    }
+
+                    event.preventDefault();
+                    $state.go(anonState, {}, {reload: true});
                   }
                 });
 
