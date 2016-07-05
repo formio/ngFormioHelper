@@ -781,13 +781,13 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
           FormioProvider.setAppUrl(url);
         },
         register: function (name, resource, path, form, override) {
-          var shouldOverride = form && !override;
+          var noOverride = form && !override;
           if (!registered) {
             registered = true;
             $stateProvider.state('auth', {
               abstract: true,
               url: '/auth',
-              templateUrl: shouldOverride ? 'formio-helper/auth/auth.html' : 'views/user/auth.html'
+              templateUrl: noOverride ? 'formio-helper/auth/auth.html' : 'views/user/auth.html'
             });
           }
 
@@ -799,7 +799,7 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
             .state('auth.' + name, {
               url: '/' + path,
               parent: 'auth',
-              templateUrl: shouldOverride ? 'formio-helper/auth/' + tpl : 'views/user/' + tpl,
+              templateUrl: noOverride ? 'formio-helper/auth/' + tpl : 'views/user/' + tpl,
               controller: ['$scope', '$state', '$rootScope', function ($scope, $state, $rootScope) {
                 $scope.currentForm = form;
                 $scope.$on('formSubmission', function (err, submission) {
