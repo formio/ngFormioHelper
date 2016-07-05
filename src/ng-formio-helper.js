@@ -636,6 +636,118 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
       };
     }
   ])
+  .directive('offlineButton', function () {
+    return {
+      restrict: 'E',
+      replace: true,
+      scope: false,
+      templateUrl: 'formio-helper/offline/button.html'
+    };
+  })
+  .provider('FormioOffline', [
+    '$stateProvider',
+    function ($stateProvider) {
+      return {
+        register: function (options) {
+          options = options || {};
+          $stateProvider.state('offline', {
+            url: options.errorUrl || '/offline/error',
+            templateUrl: 'formio-helper/offline/index.html',
+            params: {
+              currentSubmission: {}
+            },
+            controller: [
+              '$scope',
+              '$stateParams',
+              '$rootScope',
+              '$state',
+              function(
+                $scope,
+                $stateParams,
+                $rootScope,
+                $state
+              ) {
+                $scope.currentSubmission = $stateParams.currentSubmission;
+                $scope.submitSubmission = function() {
+                  $rootScope.offline.dequeueSubmissions();
+                  $state.go(options.homeState || 'home');
+                }
+                $scope.cancelSubmission = function() {
+                  $rootScope.offline.skipNextQueuedSubmission();
+                  $rootScope.offline.dequeueSubmissions();
+                }
+              }
+            ]
+          });
+        },
+        $get: [
+          'Formio',
+          'FormioAlerts',
+          '$rootScope',
+          'AppConfig',
+          '$window',
+          function (
+            Formio,
+            FormioAlerts,
+            $rootScope,
+            AppConfig,
+            $window
+          ) {
+            return {
+              init: function () {
+                $rootScope.appVersion = AppConfig.appVersion;
+                $rootScope.offline = new FormioOfflineProject(AppConfig.appUrl, 'project.json');
+                Formio.registerPlugin($rootScope.offline, 'offline');
+                $rootScope.offline.onError = function(err) {
+                  FormioAlerts.addAlert({
+                    type: 'danger',
+                    message: 'Failed to save offline cache. This could result in missing data.'
+                  });
+                };
+
+                Formio.events.on('offline.formError', function(error, submission) {
+                  FormioAlerts.addAlert({
+                    message: error,
+                    type: 'danger'
+                  })
+                  // We should check for authentication errors and redirect to login if unauthenticated and error.
+                  $state.go('offline', {currentSubmission: submission});
+                });
+
+                // This section monitors for new application versions and will prompt to reload the page. Checks every minute on
+                // state change.
+                var appCache = $window.applicationCache;
+                var checkUpdate = _.debounce(function() {
+                  appCache.update();
+                }, 60*1000);
+                // Check for appcache updates and alert the user if available.
+                if (appCache) {
+                  appCache.addEventListener('updateready', function() {
+                    if (appCache.status == appCache.UPDATEREADY) {
+                      // Browser downloaded a new app cache.
+                      if (confirm('A new version of the application is available. Would you like to load it?')) {
+                        // Swap it in and reload the page to get the latest hotness.
+                        appCache.swapCache();
+                        $window.location.reload();
+                      }
+                    }
+                    else {
+                      // Manifest didn't changed. Don't do anything.
+                    }
+                  }, false);
+                  $rootScope.$on('$stateChangeStart', function() {
+                    if (appCache.status !== appCache.UNCACHED && appCache.status !== appCache.OBSOLETE) {
+                      checkUpdate();
+                    }
+                  });
+                }
+              }
+            };
+          }
+        ]
+      };
+    }
+  ])
   .provider('FormioAuth', [
     '$stateProvider',
     'FormioProvider',
@@ -668,25 +780,28 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
         setAppUrl: function(url) {
           FormioProvider.setAppUrl(url);
         },
-        register: function (name, resource, path) {
+        register: function (name, resource, path, form, override) {
+          var shouldOverride = form && !override;
           if (!registered) {
             registered = true;
             $stateProvider.state('auth', {
               abstract: true,
               url: '/auth',
-              templateUrl: 'views/user/auth.html'
+              templateUrl: shouldOverride ? 'formio-helper/auth/auth.html' : 'views/user/auth.html'
             });
           }
 
           if (!path) {
             path = name;
           }
+          var tpl = name.toLowerCase() + '.html';
           $stateProvider
             .state('auth.' + name, {
               url: '/' + path,
               parent: 'auth',
-              templateUrl: 'views/user/' + name.toLowerCase() + '.html',
+              templateUrl: shouldOverride ? 'formio-helper/auth/' + tpl : 'views/user/' + tpl,
               controller: ['$scope', '$state', '$rootScope', function ($scope, $state, $rootScope) {
+                $scope.currentForm = form;
                 $scope.$on('formSubmission', function (err, submission) {
                   if (!submission) {
                     return;
@@ -973,6 +1088,19 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
         return $state.current.name.indexOf(state) !== -1;
       };
 
+      /**** AUTH TEMPLATES ****/
+      $templateCache.put('formio-helper/auth/auth.html',
+        fs.readFileSync(__dirname + '/templates/auth/auth.html', 'utf8')
+      );
+
+      $templateCache.put('formio-helper/auth/login.html',
+        fs.readFileSync(__dirname + '/templates/auth/login.html', 'utf8')
+      );
+
+      $templateCache.put('formio-helper/auth/register.html',
+        fs.readFileSync(__dirname + '/templates/auth/register.html', 'utf8')
+      );
+
       /**** RESOURCE TEMPLATES *******/
       $templateCache.put('formio-helper/resource/resource.html',
         fs.readFileSync(__dirname + '/templates/resource/resource.html', 'utf8')
@@ -1034,6 +1162,15 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
 
       $templateCache.put('formio-helper/submission/delete.html',
         fs.readFileSync(__dirname + '/templates/submission/delete.html', 'utf8')
+      );
+
+      /**** OFFLINE TEMPLATES ****/
+      $templateCache.put('formio-helper/offline/index.html',
+        fs.readFileSync(__dirname + '/templates/offline/index.html', 'utf8')
+      );
+
+      $templateCache.put('formio-helper/offline/button.html',
+        fs.readFileSync(__dirname + '/templates/offline/button.html', 'utf8')
       );
     }
   ]);

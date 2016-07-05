@@ -1,0 +1,6 @@
+<div class="offline-button">
+    <span class="navbar-text" ng-click="offline.forceOffline(!offline.isForcedOffline())" style="cursor:pointer;"><i class="glyphicon glyphicon-signal text-success" ng-class="{ 'text-danger': (offline.isForcedOffline() || !offline.enabled), 'text-warning' : offline.offline }"></i></span>
+    <span ng-if="offline.submissionQueueLength()" ng-click="offline.dequeueSubmissions()" class="navbar-text" style="cursor:pointer;">
+        <span class="badge">{{ offline.submissionQueueLength() }} Queued</span> <i class="glyphicon glyphicon-refresh" ng-class="{ 'glyphicon-spin': offline.dequeuing }"></i>
+    </span>
+</div>
