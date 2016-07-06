@@ -644,6 +644,18 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
       templateUrl: 'formio-helper/offline/button.html'
     };
   })
+  .directive('offlinePopup', function () {
+    return {
+      restrict: 'A',
+      scope: false,
+      link: function (scope, el) {
+        if (typeof jQuery === 'undefined') {
+          return;
+        }
+        jQuery(el).popover();
+      }
+    };
+  })
   .provider('FormioOffline', [
     '$stateProvider',
     function ($stateProvider) {
@@ -667,6 +679,9 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
                 $rootScope,
                 $state
               ) {
+                if (typeof FormioOfflineProject === 'undefined') {
+                  return;
+                }
                 $scope.currentSubmission = $stateParams.currentSubmission;
                 $scope.submitSubmission = function() {
                   $rootScope.offline.dequeueSubmissions();
@@ -695,6 +710,11 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
           ) {
             return {
               init: function () {
+                if (typeof FormioOfflineProject === 'undefined') {
+                  $rootScope.hasOfflineMode = false;
+                  return;
+                }
+                $rootScope.hasOfflineMode = true;
                 $rootScope.appVersion = AppConfig.appVersion;
                 $rootScope.offline = new FormioOfflineProject(AppConfig.appUrl, 'project.json');
                 Formio.registerPlugin($rootScope.offline, 'offline');

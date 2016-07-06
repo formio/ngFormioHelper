@@ -1,6 +1,15 @@
 <div class="offline-button">
-    <span class="navbar-text" ng-click="offline.forceOffline(!offline.isForcedOffline())" style="cursor:pointer;"><i class="glyphicon glyphicon-signal text-success" ng-class="{ 'text-danger': (offline.isForcedOffline() || !offline.enabled), 'text-warning' : offline.offline }"></i></span>
-    <span ng-if="offline.submissionQueueLength()" ng-click="offline.dequeueSubmissions()" class="navbar-text" style="cursor:pointer;">
-        <span class="badge">{{ offline.submissionQueueLength() }} Queued</span> <i class="glyphicon glyphicon-refresh" ng-class="{ 'glyphicon-spin': offline.dequeuing }"></i>
-    </span>
+    <div ng-if="hasOfflineMode">
+        <span class="navbar-text" ng-click="offline.forceOffline(!offline.isForcedOffline())" style="cursor:pointer;">
+            <i class="glyphicon glyphicon-signal text-success" ng-class="{ 'text-danger': (offline.isForcedOffline() || !offline.enabled), 'text-warning' : offline.offline }"></i>
+        </span>
+        <span ng-if="offline.submissionQueueLength()" ng-click="offline.dequeueSubmissions()" class="navbar-text" style="cursor:pointer;">
+            <span class="badge">{{ offline.submissionQueueLength() }} Queued</span> <i class="glyphicon glyphicon-refresh" ng-class="{ 'glyphicon-spin': offline.dequeuing }"></i>
+        </span>
+    </div>
+    <div ng-if="!hasOfflineMode">
+        <span class="navbar-text">
+            <a tabindex="0" offline-popup role="button" data-toggle="popover" data-placement="bottom" data-trigger="focus" title="Offline Mode Disabled" data-content="You must upgrade your project to Team Pro to enable offline mode support. Please contact support@form.io for more information."><i class="glyphicon glyphicon-signal text-danger"></i></a>
+        </span>
+    </div>
 </div>

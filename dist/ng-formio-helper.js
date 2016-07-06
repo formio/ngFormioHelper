@@ -646,6 +646,18 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
       templateUrl: 'formio-helper/offline/button.html'
     };
   })
+  .directive('offlinePopup', function () {
+    return {
+      restrict: 'A',
+      scope: false,
+      link: function (scope, el) {
+        if (typeof jQuery === 'undefined') {
+          return;
+        }
+        jQuery(el).popover();
+      }
+    };
+  })
   .provider('FormioOffline', [
     '$stateProvider',
     function ($stateProvider) {
@@ -669,6 +681,9 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
                 $rootScope,
                 $state
               ) {
+                if (typeof FormioOfflineProject === 'undefined') {
+                  return;
+                }
                 $scope.currentSubmission = $stateParams.currentSubmission;
                 $scope.submitSubmission = function() {
                   $rootScope.offline.dequeueSubmissions();
@@ -697,6 +712,11 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
           ) {
             return {
               init: function () {
+                if (typeof FormioOfflineProject === 'undefined') {
+                  $rootScope.hasOfflineMode = false;
+                  return;
+                }
+                $rootScope.hasOfflineMode = true;
                 $rootScope.appVersion = AppConfig.appVersion;
                 $rootScope.offline = new FormioOfflineProject(AppConfig.appUrl, 'project.json');
                 Formio.registerPlugin($rootScope.offline, 'offline');
@@ -1172,7 +1192,7 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
       );
 
       $templateCache.put('formio-helper/offline/button.html',
-        "<div class=\"offline-button\">\n    <span class=\"navbar-text\" ng-click=\"offline.forceOffline(!offline.isForcedOffline())\" style=\"cursor:pointer;\"><i class=\"glyphicon glyphicon-signal text-success\" ng-class=\"{ 'text-danger': (offline.isForcedOffline() || !offline.enabled), 'text-warning' : offline.offline }\"></i></span>\n    <span ng-if=\"offline.submissionQueueLength()\" ng-click=\"offline.dequeueSubmissions()\" class=\"navbar-text\" style=\"cursor:pointer;\">\n        <span class=\"badge\">{{ offline.submissionQueueLength() }} Queued</span> <i class=\"glyphicon glyphicon-refresh\" ng-class=\"{ 'glyphicon-spin': offline.dequeuing }\"></i>\n    </span>\n</div>"
+        "<div class=\"offline-button\">\n    <div ng-if=\"hasOfflineMode\">\n        <span class=\"navbar-text\" ng-click=\"offline.forceOffline(!offline.isForcedOffline())\" style=\"cursor:pointer;\">\n            <i class=\"glyphicon glyphicon-signal text-success\" ng-class=\"{ 'text-danger': (offline.isForcedOffline() || !offline.enabled), 'text-warning' : offline.offline }\"></i>\n        </span>\n        <span ng-if=\"offline.submissionQueueLength()\" ng-click=\"offline.dequeueSubmissions()\" class=\"navbar-text\" style=\"cursor:pointer;\">\n            <span class=\"badge\">{{ offline.submissionQueueLength() }} Queued</span> <i class=\"glyphicon glyphicon-refresh\" ng-class=\"{ 'glyphicon-spin': offline.dequeuing }\"></i>\n        </span>\n    </div>\n    <div ng-if=\"!hasOfflineMode\">\n        <span class=\"navbar-text\">\n            <a tabindex=\"0\" offline-popup role=\"button\" data-toggle=\"popover\" data-placement=\"bottom\" data-trigger=\"focus\" title=\"Offline Mode Disabled\" data-content=\"You must upgrade your project to Team Pro to enable offline mode support. Please contact support@form.io for more information.\"><i class=\"glyphicon glyphicon-signal text-danger\"></i></a>\n        </span>\n    </div>\n</div>"
       );
     }
   ]);
