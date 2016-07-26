@@ -1141,7 +1141,7 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
       );
 
       $templateCache.put('formio-helper/resource/index.html',
-        "<formio-grid src=\"currentResource.formUrl\" columns=\"currentResource.columns\" query=\"currentResource.gridQuery\" grid-options=\"currentResource.gridOptions\"></formio-grid><br/>\n<a ui-sref=\"{{ baseName }}Create()\" class=\"btn btn-primary\" ng-if=\"isReady && hasAccess(currentResource.name, 'create_own')\"><span class=\"glyphicon glyphicon-plus\" aria-hidden=\"true\"></span> New {{ currentResource.name | capitalize }}</a>\n"
+        "<formio-grid src=\"currentResource.formUrl\" columns=\"currentResource.columns\" query=\"currentResource.gridQuery\" grid-options=\"currentResource.gridOptions\"></formio-grid><br/>\n<a ui-sref=\"{{ baseName }}Create()\" class=\"btn btn-primary\" ng-if=\"isReady && hasAccess(currentResource.name, ['create_own', 'create_all'])\"><span class=\"glyphicon glyphicon-plus\" aria-hidden=\"true\"></span> New {{ currentResource.name | capitalize }}</a>\n"
       );
 
       $templateCache.put('formio-helper/resource/view.html',
