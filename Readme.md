@@ -21,24 +21,24 @@ Usage
 ---------------
 There are several providers that you can use within your application. See the wiki documentation for each provider's implementation details.
 
-### [https://github.com/formio/ngFormioHelper/wiki/FormioAlerts-Provider](FormioAlerts)
+### [FormioAlerts](https://github.com/formio/ngFormioHelper/wiki/FormioAlerts-Provider)
 
 Used to track and display alerts within your application.
 
-### [https://github.com/formio/ngFormioHelper/wiki/FormioAuth-Provider](FormioAuth)
+### [FormioAuth](https://github.com/formio/ngFormioHelper/wiki/FormioAuth-Provider)
 
 Used to manage login/logout, tokens and forced authentication.
 
-### [https://github.com/formio/ngFormioHelper/wiki/FormioForms-Provider](FormioForms)
+### [FormioForms](https://github.com/formio/ngFormioHelper/wiki/FormioForms-Provider)
 
 Used to create a dynamic list of tagged forms along with all the states, views and controllers.
 
-### [https://github.com/formio/ngFormioHelper/wiki/FormioOffline-Provider](FormioOffline)
+### [FormioOffline](https://github.com/formio/ngFormioHelper/wiki/FormioOffline-Provider)
 
 Used to set up offline mode for your application and provides widgets and settings for offline mode.
 
 **Requires** a paid formio plan which provides access to the offline plugin.
 
-### [https://github.com/formio/ngFormioHelper/wiki/FormioResource-Provider](FormioResource)
+### [FormioResource](https://github.com/formio/ngFormioHelper/wiki/FormioResource-Provider)
 
 Used to set up ui-router states, views and default controllers for a Formio Resource.
