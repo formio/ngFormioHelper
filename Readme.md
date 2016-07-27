@@ -1,7 +1,6 @@
 This is a helper module to build Angular.js applications on top of Form.io
 ===============
-Use this helper if you would like to build an Angular.js application that utilizes Form.io authentication and other
-necessary elements that you need to build an application.
+Use this helper if you would like to build an Angular.js 1.x application that utilizes Form.io to build an application.
 
 Installation
 ---------------
@@ -20,41 +19,26 @@ you don't want to use that, then you will need to add the ```<script>``` to your
 
 Usage
 ---------------
-There are several modules that you can use within your application.
+There are several providers that you can use within your application. See the wiki documentation for each provider's implementation details.
 
+### [https://github.com/formio/ngFormioHelper/wiki/FormioAlerts-Provider](FormioAlerts)
 
-  - **FormioAuthProvider** - This allows you to register the authentication login pages and provide the authenticated and anonymous states.
-    ```
-.config(function(FormioAuthProvider) {
+Used to track and display alerts within your application.
 
-    // Set the base url for formio.
-    FormioAuthProvider.setStates('auth.login', 'home');
-    FormioAuthProvider.setForceAuth(true);
-    FormioAuthProvider.register('userLogin', 'user', 'user/login');
-    FormioAuthProvider.register('customerLogin', 'customer', 'customer/login');
-    ```
+### [https://github.com/formio/ngFormioHelper/wiki/FormioAuth-Provider](FormioAuth)
 
-  - **FormioAuth** - You need to run the **init()** method in order to initialize all of the authentications.
-    ```
-.run(function(FormioAuth) {
+Used to manage login/logout, tokens and forced authentication.
 
-    // Initialize the Form.io authentication provider.
-    FormioAuth.init();
-    ```
+### [https://github.com/formio/ngFormioHelper/wiki/FormioForms-Provider](FormioForms)
 
-  - **FormioAlerts** - Keeps track of all alters that are made within your application.
-    You can add this to your page by adding the following...
+Used to create a dynamic list of tagged forms along with all the states, views and controllers.
 
-    ```
-<uib-alert ng-repeat="alert in alerts" type="{{alert.type}}" close="closeAlert($index)">{{alert.message}}</uib-alert>
-    ```
+### [https://github.com/formio/ngFormioHelper/wiki/FormioOffline-Provider](FormioOffline)
 
-    You can then add new alerts by doing the following.
+Used to set up offline mode for your application and provides widgets and settings for offline mode.
 
-    ```
-FormioAlerts.addAlert({
-    type: 'danger',
-    message: 'Your session has expired. Please log in again.'
-});
-    ```
+**Requires** a paid formio plan which provides access to the offline plugin.
 
+### [https://github.com/formio/ngFormioHelper/wiki/FormioResource-Provider](FormioResource)
+
+Used to set up ui-router states, views and default controllers for a Formio Resource.
