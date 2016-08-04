@@ -1,6 +1,6 @@
 {
   "name": "ng-formio-helper",
-  "version": "0.17.9",
+  "version": "0.18.0",
   "authors": [
     "Travis Tidwell <travis@form.io>"
   ],
@@ -20,9 +20,9 @@
   ],
   "dependencies": {
     "angular-ui-router": "^0.3.1",
-    "lodash": "^4.13.1",
-    "ng-formio": "^1.8.16",
-    "ng-formio-grid": "^0.7.2"
+    "lodash": "^4.14.1",
+    "ng-formio": "^2.1.1",
+    "ng-formio-grid": "^0.8.1"
   },
   "main": "dist/ng-formio-helper.js"
 }
