@@ -971,6 +971,10 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
 
                   var hasAccess = false;
                   permissions.forEach(function(permission) {
+                    // Check that there are permissions.
+                    if (!formAccess[form][permission]) {
+                      return false;
+                    }
                     // Check for anonymous users. Must set anonRole.
                     if (!$rootScope.user) {
                       if (formAccess[form][permission].indexOf(anonRole) !== -1) {
