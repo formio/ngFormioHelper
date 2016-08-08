@@ -641,6 +641,12 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
       restrict: 'E',
       replace: true,
       scope: false,
+      controller: [
+        '$scope', '$rootScope', function($scope, $rootScope) {
+          $scope.offline = $rootScope.offline;
+          $scope.hasOfflineMode = $rootScope.hasOfflineMode;
+        }
+      ],
       templateUrl: 'formio-helper/offline/button.html'
     };
   })
@@ -711,9 +717,11 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
             return {
               init: function () {
                 if (typeof FormioOfflineProject === 'undefined') {
+                  console.log('setting off');
                   $rootScope.hasOfflineMode = false;
                   return;
                 }
+                console.log('setting on');
                 $rootScope.hasOfflineMode = true;
                 $rootScope.appVersion = AppConfig.appVersion;
                 $rootScope.offline = new FormioOfflineProject(AppConfig.appUrl, 'project.json');
