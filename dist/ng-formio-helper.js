@@ -709,12 +709,14 @@ angular.module('ngFormioHelper', ['formio', 'ngFormioGrid', 'ui.router'])
           '$rootScope',
           'AppConfig',
           '$window',
+          '$state',
           function (
             Formio,
             FormioAlerts,
             $rootScope,
             AppConfig,
-            $window
+            $window,
+            $state
           ) {
             return {
               init: function () {
