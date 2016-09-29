@@ -8,37 +8,51 @@ plugins.browserify = require('browserify');
 plugins.watchify = require('watchify');
 
 // Clean the dist folder.
-gulp.task('clean', function() {
-    return gulp.src('dist').pipe(vinylPaths(del));
+gulp.task('clean', function () {
+  return gulp.src('dist').pipe(vinylPaths(del));
 });
 
-var bundle = plugins.browserify({
-    entries: './src/ng-formio-helper.js',
-    debug: false
+var bundleHelper = plugins.browserify({
+  entries: './src/ng-formio-helper.js',
+  debug: false
 });
 
-// Wire the dependencies into index.html
-var build = function() {
-    return bundle
-      .bundle()
-      .pipe(plugins.source('ng-formio-helper.js'))
+var bundleBuilder = plugins.browserify({
+  entries: './src/ng-formio-builder.js',
+  debug: false
+});
+
+var builder = function(bundle, file) {
+  return function () {
+    return bundle.bundle()
+      .pipe(plugins.source(file + '.js'))
       .pipe(gulp.dest('dist'))
-      .pipe(plugins.rename('ng-formio-helper.min.js'))
+      .pipe(plugins.rename(file + '.min.js'))
       .pipe(plugins.streamify(plugins.uglify()))
       .pipe(gulp.dest('dist'));
+  };
 };
-gulp.task('scripts', build);
-gulp.task('watch', function() {
-    bundle = plugins.watchify(bundle);
-    bundle.on('update', function(files) {
-        console.log('Changed files: ', files.map(path.relative.bind(path, process.cwd())).join(', '));
-        console.log('Rebuilding dist/formio.js...');
-        build();
+
+// Wire the dependencies into index.html
+var buildHelper = builder(bundleHelper, 'ng-formio-helper');
+
+// Wire the dependencies into index.html
+var buildBuilder = builder(bundleBuilder, 'ng-formio-builder');
+
+gulp.task('scripts-helper', buildHelper);
+gulp.task('scripts-builder', buildBuilder);
+gulp.task('scripts', ['scripts-helper', 'scripts-builder']);
+gulp.task('watch', function () {
+  plugins.watchify(bundleHelper)
+    .on('update', function (files) {
+      console.log('Changed files: ', files.map(path.relative.bind(path, process.cwd())).join(', '));
+      console.log('Rebuilding dist/ng-formio-helper.js...');
+      buildHelper();
+    })
+    .on('log', function (msg) {
+      console.log(msg);
     });
-    bundle.on('log', function(msg) {
-        console.log(msg);
-    });
-    return build();
+  return buildHelper();
 });
 
 // Define the build task.

@@ -20,9 +20,13 @@
   ],
   "dependencies": {
     "angular-ui-router": "^0.3.1",
-    "lodash": "^4.14.1",
-    "ng-formio": "^2.1.5",
-    "ng-formio-grid": "^0.8.2"
+    "lodash": "^4.16.2",
+    "ng-formio": "^2.2.9",
+    "ng-formio-grid": "^0.9.0",
+    "angular-paginate-anything": "^4.2.0"
   },
-  "main": "dist/ng-formio-helper.js"
+  "main": [
+    "dist/ng-formio-helper.js",
+    "dist/ng-formio-builder.js"
+  ]
 }
