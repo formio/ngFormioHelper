@@ -11,6 +11,7 @@ angular.module('ngFormioHelper')
     var registered = false;
     // These are needed to check permissions against specific forms.
     var formAccess = {};
+    var submissionAccess = {};
     var roles = {};
     return {
       setForceAuth: function (allowed) {
@@ -84,12 +85,22 @@ angular.module('ngFormioHelper')
             init: function () {
               init = true;
 
+              // Load the project.
+              $rootScope.projectPromise = Formio.makeStaticRequest(Formio.getAppUrl()).then(function(project) {
+                angular.forEach(project.access, function(access) {
+                  formAccess[access.type] = access.roles;
+                });
+              }, function(err) {
+                formAccess = {};
+                return null;
+              });
+
               // Get the access for this project.
               $rootScope.accessPromise = Formio.makeStaticRequest(Formio.getAppUrl() + '/access').then(function(access) {
                 angular.forEach(access.forms, function(form) {
-                  formAccess[form.name] = {};
+                  submissionAccess[form.name] = {};
                   form.submissionAccess.forEach(function(access) {
-                    formAccess[form.name][access.type] = access.roles;
+                    submissionAccess[form.name][access.type] = access.roles;
                   });
                 });
                 roles = access.roles;
@@ -184,44 +195,49 @@ angular.module('ngFormioHelper')
                 });
               };
 
-              $rootScope.hasAccess = function(form, permissions) {
+              $rootScope.checkAccess = function(access, permissions) {
                 // Bypass if using an alternative Auth system.
                 if (!init) {
                   return true;
                 }
 
-                // Allow single permission or array of permissions.
                 if (!Array.isArray(permissions)) {
                   permissions = [permissions];
                 }
 
-                // Check that the formAccess has been initialized.
-                if (!formAccess[form]) {
+                if (!access) {
                   return false;
                 }
 
                 var hasAccess = false;
                 permissions.forEach(function(permission) {
                   // Check that there are permissions.
-                  if (!formAccess[form][permission]) {
+                  if (!access[permission]) {
                     return false;
                   }
                   // Check for anonymous users. Must set anonRole.
                   if (!$rootScope.user) {
-                    if (formAccess[form][permission].indexOf(anonRole) !== -1) {
+                    if (access[permission].indexOf(anonRole) !== -1) {
                       hasAccess = true;
                     }
                   }
                   else {
                     // Check the user's roles for access.
                     $rootScope.user.roles.forEach(function(role) {
-                      if (formAccess[form][permission].indexOf(role) !== -1) {
+                      if (access[permission].indexOf(role) !== -1) {
                         hasAccess = true;
                       }
                     });
                   }
                 });
                 return hasAccess;
+              };
+
+              $rootScope.formAccess = function(permissions) {
+                return $rootScope.checkAccess(formAccess, permissions);
+              };
+              $rootScope.hasAccess = function(form, permissions) {
+                return $rootScope.checkAccess(submissionAccess[form], permissions);
               };
               $rootScope.ifAccess = function(form, permissions) {
                 return $rootScope.whenReady.then(function() {

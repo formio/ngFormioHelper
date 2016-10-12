@@ -420,6 +420,7 @@ angular.module('ngFormioHelper')
     var registered = false;
     // These are needed to check permissions against specific forms.
     var formAccess = {};
+    var submissionAccess = {};
     var roles = {};
     return {
       setForceAuth: function (allowed) {
@@ -493,12 +494,22 @@ angular.module('ngFormioHelper')
             init: function () {
               init = true;
 
+              // Load the project.
+              $rootScope.projectPromise = Formio.makeStaticRequest(Formio.getAppUrl()).then(function(project) {
+                angular.forEach(project.access, function(access) {
+                  formAccess[access.type] = access.roles;
+                });
+              }, function(err) {
+                formAccess = {};
+                return null;
+              });
+
               // Get the access for this project.
               $rootScope.accessPromise = Formio.makeStaticRequest(Formio.getAppUrl() + '/access').then(function(access) {
                 angular.forEach(access.forms, function(form) {
-                  formAccess[form.name] = {};
+                  submissionAccess[form.name] = {};
                   form.submissionAccess.forEach(function(access) {
-                    formAccess[form.name][access.type] = access.roles;
+                    submissionAccess[form.name][access.type] = access.roles;
                   });
                 });
                 roles = access.roles;
@@ -593,44 +604,49 @@ angular.module('ngFormioHelper')
                 });
               };
 
-              $rootScope.hasAccess = function(form, permissions) {
+              $rootScope.checkAccess = function(access, permissions) {
                 // Bypass if using an alternative Auth system.
                 if (!init) {
                   return true;
                 }
 
-                // Allow single permission or array of permissions.
                 if (!Array.isArray(permissions)) {
                   permissions = [permissions];
                 }
 
-                // Check that the formAccess has been initialized.
-                if (!formAccess[form]) {
+                if (!access) {
                   return false;
                 }
 
                 var hasAccess = false;
                 permissions.forEach(function(permission) {
                   // Check that there are permissions.
-                  if (!formAccess[form][permission]) {
+                  if (!access[permission]) {
                     return false;
                   }
                   // Check for anonymous users. Must set anonRole.
                   if (!$rootScope.user) {
-                    if (formAccess[form][permission].indexOf(anonRole) !== -1) {
+                    if (access[permission].indexOf(anonRole) !== -1) {
                       hasAccess = true;
                     }
                   }
                   else {
                     // Check the user's roles for access.
                     $rootScope.user.roles.forEach(function(role) {
-                      if (formAccess[form][permission].indexOf(role) !== -1) {
+                      if (access[permission].indexOf(role) !== -1) {
                         hasAccess = true;
                       }
                     });
                   }
                 });
                 return hasAccess;
+              };
+
+              $rootScope.formAccess = function(permissions) {
+                return $rootScope.checkAccess(formAccess, permissions);
+              };
+              $rootScope.hasAccess = function(form, permissions) {
+                return $rootScope.checkAccess(submissionAccess[form], permissions);
               };
               $rootScope.ifAccess = function(form, permissions) {
                 return $rootScope.whenReady.then(function() {
@@ -704,6 +720,7 @@ angular.module('ngFormioHelper')
     };
   }
 ]);
+
 },{}],9:[function(require,module,exports){
 "use strict";
 angular.module('ngFormioHelper')
@@ -1155,6 +1172,7 @@ angular.module('ngFormioHelper')
           .state(baseName + 'Index', options.alter.index({
             url: '/' + name + queryParams,
             params: options.params && options.params.index,
+            data: options.data && options.data.index,
             templateUrl: templates.index ? templates.index : 'formio-helper/resource/index.html',
             controller: [
               '$scope',
@@ -1207,6 +1225,7 @@ angular.module('ngFormioHelper')
           .state(baseName + 'Create', options.alter.create({
             url: '/create/' + name + queryParams,
             params: options.params && options.params.create,
+            data: options.data && options.data.create,
             templateUrl: templates.create ? templates.create : 'formio-helper/resource/create.html',
             controller: [
               '$scope',
@@ -1253,6 +1272,7 @@ angular.module('ngFormioHelper')
           .state(baseName, options.alter.abstract({
             abstract: true,
             url: '/' + name + '/:' + queryId,
+            data: options.data && options.data.abstract,
             templateUrl: templates.abstract ? templates.abstract : 'formio-helper/resource/resource.html',
             controller: [
               '$scope',
@@ -1319,6 +1339,7 @@ angular.module('ngFormioHelper')
           .state(baseName + '.view', options.alter.view({
             url: '/',
             params: options.params && options.params.view,
+            data: options.data && options.data.view,
             templateUrl: templates.view ? templates.view : 'formio-helper/resource/view.html',
             controller: [
               '$scope',
@@ -1334,6 +1355,7 @@ angular.module('ngFormioHelper')
           .state(baseName + '.edit', options.alter.edit({
             url: '/edit',
             params: options.params && options.params.edit,
+            data: options.data && options.data.edit,
             templateUrl: templates.edit ? templates.edit : 'formio-helper/resource/edit.html',
             controller: [
               '$scope',
@@ -1365,6 +1387,7 @@ angular.module('ngFormioHelper')
           .state(baseName + '.delete', options.alter.delete({
             url: '/delete',
             params: options.params && options.params.delete,
+            data: options.data && options.data.delete,
             templateUrl: templates.delete ? templates.delete : 'formio-helper/resource/delete.html',
             controller: [
               '$scope',
@@ -1402,4 +1425,5 @@ angular.module('ngFormioHelper')
     };
   }
 ]);
+
 },{}]},{},[7]);

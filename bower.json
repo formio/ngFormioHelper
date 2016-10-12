@@ -23,7 +23,8 @@
     "lodash": "^4.16.2",
     "ng-formio": "^2.2.9",
     "ng-formio-grid": "^0.9.0",
-    "angular-paginate-anything": "^4.2.0"
+    "angular-paginate-anything": "^4.2.0",
+    "ng-formio-builder": "^2.2.10"
   },
   "main": [
     "dist/ng-formio-helper.js",

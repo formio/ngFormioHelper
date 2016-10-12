@@ -1,6 +1,7 @@
 var fs = require('fs');
 angular.module('ngFormBuilderHelper', [
   'formio',
+  'ngFormBuilder',
   'ngFormioGrid',
   'ngFormioHelper',
   'ui.router',

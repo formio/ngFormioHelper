@@ -65,7 +65,6 @@ angular.module('ngFormBuilderHelper')
           })
           .state(basePath + 'form.delete', {
             url: '/delete',
-            parent: 'form',
             templateUrl: _.get(templates, 'form.delete', 'formio-helper/formbuilder/delete.html'),
             controller: ['$scope', '$controller', execute('form.delete')]
           });

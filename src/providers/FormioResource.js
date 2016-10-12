@@ -41,6 +41,7 @@ angular.module('ngFormioHelper')
           .state(baseName + 'Index', options.alter.index({
             url: '/' + name + queryParams,
             params: options.params && options.params.index,
+            data: options.data && options.data.index,
             templateUrl: templates.index ? templates.index : 'formio-helper/resource/index.html',
             controller: [
               '$scope',
@@ -93,6 +94,7 @@ angular.module('ngFormioHelper')
           .state(baseName + 'Create', options.alter.create({
             url: '/create/' + name + queryParams,
             params: options.params && options.params.create,
+            data: options.data && options.data.create,
             templateUrl: templates.create ? templates.create : 'formio-helper/resource/create.html',
             controller: [
               '$scope',
@@ -139,6 +141,7 @@ angular.module('ngFormioHelper')
           .state(baseName, options.alter.abstract({
             abstract: true,
             url: '/' + name + '/:' + queryId,
+            data: options.data && options.data.abstract,
             templateUrl: templates.abstract ? templates.abstract : 'formio-helper/resource/resource.html',
             controller: [
               '$scope',
@@ -205,6 +208,7 @@ angular.module('ngFormioHelper')
           .state(baseName + '.view', options.alter.view({
             url: '/',
             params: options.params && options.params.view,
+            data: options.data && options.data.view,
             templateUrl: templates.view ? templates.view : 'formio-helper/resource/view.html',
             controller: [
               '$scope',
@@ -220,6 +224,7 @@ angular.module('ngFormioHelper')
           .state(baseName + '.edit', options.alter.edit({
             url: '/edit',
             params: options.params && options.params.edit,
+            data: options.data && options.data.edit,
             templateUrl: templates.edit ? templates.edit : 'formio-helper/resource/edit.html',
             controller: [
               '$scope',
@@ -251,6 +256,7 @@ angular.module('ngFormioHelper')
           .state(baseName + '.delete', options.alter.delete({
             url: '/delete',
             params: options.params && options.params.delete,
+            data: options.data && options.data.delete,
             templateUrl: templates.delete ? templates.delete : 'formio-helper/resource/delete.html',
             controller: [
               '$scope',
