@@ -1,4 +1,4 @@
-<a ng-if="isAdministrator || formAccess(['create_all'])" ui-sref="{{ basePath }}createForm()" class="btn btn-primary"><span class="glyphicon glyphicon-plus"></span> Create Form</a>
+<a ng-if="isAdministrator || formAccess(['create_all'])" ui-sref="{{ basePath }}createForm({formType: 'form'})" class="btn btn-primary"><span class="glyphicon glyphicon-plus"></span> Create Form</a>
 <span class="glyphicon glyphicon-refresh glyphicon-spin" style="font-size: 2em;" ng-if="loading"></span>
 <table class="table table-striped" style="margin-top: 20px;">
   <tbody>

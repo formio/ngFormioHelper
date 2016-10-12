@@ -15,6 +15,8 @@ angular.module('ngFormBuilderHelper')
     FormioAlerts
   ) {
     $scope.loading = true;
+    $scope.hideComponents = [];
+    $scope.submission = {data: {}};
     $scope.formId = $stateParams.formId;
     $scope.formUrl = FormioHelperConfig.appUrl + '/form';
     $scope.appUrl = FormioHelperConfig.appUrl;

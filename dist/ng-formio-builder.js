@@ -179,6 +179,8 @@ angular.module('ngFormBuilderHelper')
     FormioAlerts
   ) {
     $scope.loading = true;
+    $scope.hideComponents = [];
+    $scope.submission = {data: {}};
     $scope.formId = $stateParams.formId;
     $scope.formUrl = FormioHelperConfig.appUrl + '/form';
     $scope.appUrl = FormioHelperConfig.appUrl;
@@ -287,6 +289,7 @@ angular.module('ngFormBuilderHelper')
     };
   }
 ]);
+
 },{}],3:[function(require,module,exports){
 "use strict";
 angular.module('ngFormBuilderHelper')
@@ -522,7 +525,7 @@ angular.module('ngFormBuilderHelper', [
     $templateCache
   ) {
     $templateCache.put('formio-helper/formbuilder/index.html',
-      "<a ng-if=\"isAdministrator || formAccess(['create_all'])\" ui-sref=\"{{ basePath }}createForm()\" class=\"btn btn-primary\"><span class=\"glyphicon glyphicon-plus\"></span> Create Form</a>\n<span class=\"glyphicon glyphicon-refresh glyphicon-spin\" style=\"font-size: 2em;\" ng-if=\"loading\"></span>\n<table class=\"table table-striped\" style=\"margin-top: 20px;\">\n  <tbody>\n  <tr data-ng-repeat=\"form in forms\" ng-if=\"isAdministrator || hasAccess(form.name, ['create_own', 'create_all', 'read_all', 'create_own'])\">\n    <td>\n      <div class=\"row\">\n        <div class=\"col-sm-8\">\n          <a ui-sref=\"{{ basePath }}form.view({formId: form._id})\"><h5>{{ form.title }}</h5></a>\n        </div>\n        <div class=\"col-sm-4\">\n          <div class=\"button-group pull-right\" style=\"display:flex;\">\n            <a ng-if=\"isAdministrator || hasAccess(form.name, ['create_own', 'create_all'])\" ui-sref=\"{{ basePath }}form.view({formId: form._id})\" class=\"btn btn-default btn-xs\">\n              <span class=\"glyphicon glyphicon-pencil\"></span> Enter Data\n            </a>&nbsp;\n            <a ng-if=\"isAdministrator || hasAccess(form.name, ['read_all', 'create_own'])\" ui-sref=\"{{ basePath }}form.submission.index({formId: form._id})\" class=\"btn btn-default btn-xs\">\n              <span class=\"glyphicon glyphicon-list-alt\"></span> View Data\n            </a>&nbsp;\n            <a ng-if=\"isAdministrator || formAccess(['edit_all', 'create_all'])\" ui-sref=\"{{ basePath }}form.edit({formId: form._id})\" class=\"btn btn-default btn-xs\">\n              <span class=\"glyphicon glyphicon-edit\"></span> Edit Form\n            </a>&nbsp;\n            <a ng-if=\"isAdministrator || formAccess(['delete_all'])\" ui-sref=\"{{ basePath }}form.delete({formId: form._id, formType: 'form'})\" class=\"btn btn-default btn-xs\">\n              <span class=\"glyphicon glyphicon-trash\"></span>\n            </a>\n          </div>\n        </div>\n      </div>\n    </td>\n  </tr>\n  </tbody>\n</table>\n<bgf-pagination\n  collection=\"forms\"\n  url=\"formsUrl\"\n  per-page=\"formsPerPage\"\n  template-url=\"formio-helper/pager.html\"\n></bgf-pagination>\n"
+      "<a ng-if=\"isAdministrator || formAccess(['create_all'])\" ui-sref=\"{{ basePath }}createForm({formType: 'form'})\" class=\"btn btn-primary\"><span class=\"glyphicon glyphicon-plus\"></span> Create Form</a>\n<span class=\"glyphicon glyphicon-refresh glyphicon-spin\" style=\"font-size: 2em;\" ng-if=\"loading\"></span>\n<table class=\"table table-striped\" style=\"margin-top: 20px;\">\n  <tbody>\n  <tr data-ng-repeat=\"form in forms\" ng-if=\"isAdministrator || hasAccess(form.name, ['create_own', 'create_all', 'read_all', 'create_own'])\">\n    <td>\n      <div class=\"row\">\n        <div class=\"col-sm-8\">\n          <a ui-sref=\"{{ basePath }}form.view({formId: form._id})\"><h5>{{ form.title }}</h5></a>\n        </div>\n        <div class=\"col-sm-4\">\n          <div class=\"button-group pull-right\" style=\"display:flex;\">\n            <a ng-if=\"isAdministrator || hasAccess(form.name, ['create_own', 'create_all'])\" ui-sref=\"{{ basePath }}form.view({formId: form._id})\" class=\"btn btn-default btn-xs\">\n              <span class=\"glyphicon glyphicon-pencil\"></span> Enter Data\n            </a>&nbsp;\n            <a ng-if=\"isAdministrator || hasAccess(form.name, ['read_all', 'create_own'])\" ui-sref=\"{{ basePath }}form.submission.index({formId: form._id})\" class=\"btn btn-default btn-xs\">\n              <span class=\"glyphicon glyphicon-list-alt\"></span> View Data\n            </a>&nbsp;\n            <a ng-if=\"isAdministrator || formAccess(['edit_all', 'create_all'])\" ui-sref=\"{{ basePath }}form.edit({formId: form._id})\" class=\"btn btn-default btn-xs\">\n              <span class=\"glyphicon glyphicon-edit\"></span> Edit Form\n            </a>&nbsp;\n            <a ng-if=\"isAdministrator || formAccess(['delete_all'])\" ui-sref=\"{{ basePath }}form.delete({formId: form._id, formType: 'form'})\" class=\"btn btn-default btn-xs\">\n              <span class=\"glyphicon glyphicon-trash\"></span>\n            </a>\n          </div>\n        </div>\n      </div>\n    </td>\n  </tr>\n  </tbody>\n</table>\n<bgf-pagination\n  collection=\"forms\"\n  url=\"formsUrl\"\n  per-page=\"formsPerPage\"\n  template-url=\"formio-helper/pager.html\"\n></bgf-pagination>\n"
     );
 
     $templateCache.put('formio-helper/formbuilder/create.html',
@@ -546,7 +549,7 @@ angular.module('ngFormBuilderHelper', [
     );
 
     $templateCache.put('formio-helper/formbuilder/view.html',
-      "<formio src=\"formUrl\"></formio>\n"
+      "<formio src=\"formUrl\" submission=\"submission\" hide-components=\"hideComponents\"></formio>\n"
     );
 
     $templateCache.put('formio-helper/formbuilder/action/add.html',
