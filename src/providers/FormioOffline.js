@@ -33,6 +33,7 @@ angular.module('ngFormioHelper')
               $scope.cancelSubmission = function() {
                 $rootScope.offline.skipNextQueuedSubmission();
                 $rootScope.offline.dequeueSubmissions();
+                $state.go(options.homeState || 'home');
               }
             }
           ]
