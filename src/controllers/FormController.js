@@ -20,11 +20,12 @@ angular.module('ngFormBuilderHelper')
     $scope.formId = $stateParams.formId;
     $scope.formUrl = FormioHelperConfig.appUrl + '/form';
     $scope.appUrl = FormioHelperConfig.appUrl;
+    var formTag = FormioHelperConfig.tag || 'common';
     $scope.formUrl += $stateParams.formId ? ('/' + $stateParams.formId) : '';
     $scope.form = {
       components:[],
       type: ($stateParams.formType ? $stateParams.formType : 'form'),
-      tags: ['common']
+      tags: [formTag]
     };
     $scope.formio = new Formio($scope.formUrl);
 
