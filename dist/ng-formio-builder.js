@@ -203,6 +203,9 @@ angular.module('ngFormBuilderHelper')
       // Load the roles available.
       if (!$scope.form.submissionAccess) {
         Formio.makeStaticRequest(Formio.getAppUrl() + '/role').then(function(roles) {
+          if ($scope.form.submissionAccess) {
+            return;
+          }
           angular.forEach(roles, function(role) {
             if (!role.admin && !role.default) {
               // Add access to the form being created to allow for authenticated people to create their own.
