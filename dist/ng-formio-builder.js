@@ -273,7 +273,7 @@ angular.module('ngFormBuilderHelper')
         type: 'success',
         message: 'Form was deleted.'
       });
-      $state.go($scope.basePath + 'form.index');
+      $state.go($scope.basePath + 'formIndex');
     });
 
     $scope.$on('cancel', function() {
