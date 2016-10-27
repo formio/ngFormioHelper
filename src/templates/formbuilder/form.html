@@ -1,9 +1,9 @@
 <h2>{{form.title}}</h2>
 <ul class="nav nav-tabs">
   <li role="presentation" ng-if="isAdministrator || hasAccess(form.name, ['create_own', 'create_all'])" ng-class="{active:isActive(basePath + 'form.view')}"><a ui-sref="{{ basePath }}form.view()">Enter Data</a></li>
-  <li role="presentation" ng-if="isAdministrator || hasAccess(form.name, ['read_own', 'read_all'])" ng-class="{active:isActive(basePath + 'form.submission')}"><a ui-sref="{{ basePath }}form.submission.index()">View Data</a></li>
+  <li role="presentation" ng-if="isAdministrator || hasAccess(form.name, ['read_own', 'read_all'])" ng-class="{active:isActive(basePath + 'form.submission')}"><a ui-sref="{{ basePath }}form.submissionIndex()">View Data</a></li>
   <li role="presentation" ng-if="isAdministrator || formAccess(['edit_all', 'create_all'])" ng-class="{active:isActive(basePath + 'form.edit')}"><a ui-sref="{{ basePath }}form.edit()">Edit Form</a></li>
-  <li role="presentation" ng-if="isAdministrator || formAccess(['edit_all', 'create_all'])" ng-class="{active:isActive(basePath + 'form.action')}"><a ui-sref="{{ basePath }}form.action.index()">Form Actions</a></li>
+  <li role="presentation" ng-if="isAdministrator || formAccess(['edit_all', 'create_all'])" ng-class="{active:isActive(basePath + 'form.action')}"><a ui-sref="{{ basePath }}form.actionIndex()">Form Actions</a></li>
   <li role="presentation" ng-if="isAdministrator || formAccess(['edit_all', 'create_all'])" ng-class="{active:isActive(basePath + 'form.permission')}"><a ui-sref="{{ basePath }}form.permission()">Access</a></li>
 </ul>
 <div ui-view></div>

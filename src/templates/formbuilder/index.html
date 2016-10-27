@@ -13,7 +13,7 @@
             <a ng-if="isAdministrator || hasAccess(form.name, ['create_own', 'create_all'])" ui-sref="{{ basePath }}form.view({formId: form._id})" class="btn btn-default btn-xs">
               <span class="glyphicon glyphicon-pencil"></span> Enter Data
             </a>&nbsp;
-            <a ng-if="isAdministrator || hasAccess(form.name, ['read_all', 'create_own'])" ui-sref="{{ basePath }}form.submission.index({formId: form._id})" class="btn btn-default btn-xs">
+            <a ng-if="isAdministrator || hasAccess(form.name, ['read_all', 'create_own'])" ui-sref="{{ basePath }}form.submissionIndex({formId: form._id})" class="btn btn-default btn-xs">
               <span class="glyphicon glyphicon-list-alt"></span> View Data
             </a>&nbsp;
             <a ng-if="isAdministrator || formAccess(['edit_all', 'create_all'])" ui-sref="{{ basePath }}form.edit({formId: form._id})" class="btn btn-default btn-xs">

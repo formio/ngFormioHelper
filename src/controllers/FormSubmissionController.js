@@ -22,8 +22,9 @@ angular.module('ngFormBuilderHelper')
     // Load the submission.
     if ($scope.submissionId) {
       $scope.formio = new Formio($scope.submissionUrl);
-      $scope.formio.loadSubmission().then(function(submission) {
+      $scope.loadSubmissionPromise = $scope.formio.loadSubmission().then(function(submission) {
         $scope.submission = submission;
+        return submission;
       });
     }
 
@@ -34,7 +35,7 @@ angular.module('ngFormBuilderHelper')
         type: 'success',
         message: 'Submission was ' + message + '.'
       });
-      $state.go($scope.basePath + 'form.submission.index', {formId: $scope.formId});
+      $state.go($scope.basePath + 'form.submissionIndex', {formId: $scope.formId});
     });
 
     $scope.$on('delete', function(event) {
@@ -43,12 +44,12 @@ angular.module('ngFormBuilderHelper')
         type: 'success',
         message: 'Submission was deleted.'
       });
-      $state.go($scope.basePath + 'form.submission.index');
+      $state.go($scope.basePath + 'form.submissionIndex');
     });
 
     $scope.$on('cancel', function(event) {
       event.stopPropagation();
-      $state.go($scope.basePath + 'form.submission.item.view');
+      $state.go($scope.basePath + 'form.submission.view');
     });
 
     $scope.$on('formError', function(event, error) {
@@ -57,25 +58,25 @@ angular.module('ngFormBuilderHelper')
     });
 
     $scope.$on('rowView', function (event, submission) {
-      $state.go($scope.basePath + 'form.submission.item.view', {
+      $state.go($scope.basePath + 'form.submission.view', {
         subId: submission._id
       });
     });
 
     $scope.$on('submissionView', function(event, submission) {
-      $state.go($scope.basePath + 'form.submission.item.view', {
+      $state.go($scope.basePath + 'form.submission.view', {
         subId: submission._id
       });
     });
 
     $scope.$on('submissionEdit', function(event, submission) {
-      $state.go($scope.basePath + 'form.submission.item.edit', {
+      $state.go($scope.basePath + 'form.submission.edit', {
         subId: submission._id
       });
     });
 
     $scope.$on('submissionDelete', function(event, submission) {
-      $state.go($scope.basePath + 'form.submission.item.delete', {
+      $state.go($scope.basePath + 'form.submission.delete', {
         subId: submission._id
       });
     });

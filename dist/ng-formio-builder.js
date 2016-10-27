@@ -145,21 +145,22 @@ angular.module('ngFormBuilderHelper')
     $scope.$on('formSubmission', function(event) {
       event.stopPropagation();
       FormioAlerts.addAlert({type: 'success', message: 'Action was updated.'});
-      $state.go($scope.basePath + 'form.action.index');
+      $state.go($scope.basePath + 'form.actionIndex');
     });
 
     $scope.$on('delete', function(event) {
       event.stopPropagation();
       FormioAlerts.addAlert({type: 'success', message: 'Action was deleted.'});
-      $state.go($scope.basePath + 'form.action.index');
+      $state.go($scope.basePath + 'form.actionIndex');
     });
 
     $scope.$on('cancel', function(event) {
       event.stopPropagation();
-      $state.go($scope.basePath + 'form.action.index');
+      $state.go($scope.basePath + 'form.actionIndex');
     });
   }
 ]);
+
 },{}],2:[function(require,module,exports){
 "use strict";
 angular.module('ngFormBuilderHelper')
@@ -195,8 +196,9 @@ angular.module('ngFormBuilderHelper')
 
     // Load the form if the id is provided.
     if ($stateParams.formId) {
-      $scope.formio.loadForm().then(function(form) {
+      $scope.formLoadPromise = $scope.formio.loadForm().then(function(form) {
         $scope.form = form;
+        return form;
       }, FormioAlerts.onError.bind(FormioAlerts));
     }
     else {
@@ -247,7 +249,7 @@ angular.module('ngFormBuilderHelper')
         message: 'New submission added!'
       });
       if (submission._id) {
-        $state.go($scope.basePath + 'form.submission.item.view', {subId: submission._id});
+        $state.go($scope.basePath + 'form.submission.view', {subId: submission._id});
       }
     });
 
@@ -335,8 +337,9 @@ angular.module('ngFormBuilderHelper')
     // Load the submission.
     if ($scope.submissionId) {
       $scope.formio = new Formio($scope.submissionUrl);
-      $scope.formio.loadSubmission().then(function(submission) {
+      $scope.loadSubmissionPromise = $scope.formio.loadSubmission().then(function(submission) {
         $scope.submission = submission;
+        return submission;
       });
     }
 
@@ -347,7 +350,7 @@ angular.module('ngFormBuilderHelper')
         type: 'success',
         message: 'Submission was ' + message + '.'
       });
-      $state.go($scope.basePath + 'form.submission.index', {formId: $scope.formId});
+      $state.go($scope.basePath + 'form.submissionIndex', {formId: $scope.formId});
     });
 
     $scope.$on('delete', function(event) {
@@ -356,12 +359,12 @@ angular.module('ngFormBuilderHelper')
         type: 'success',
         message: 'Submission was deleted.'
       });
-      $state.go($scope.basePath + 'form.submission.index');
+      $state.go($scope.basePath + 'form.submissionIndex');
     });
 
     $scope.$on('cancel', function(event) {
       event.stopPropagation();
-      $state.go($scope.basePath + 'form.submission.item.view');
+      $state.go($scope.basePath + 'form.submission.view');
     });
 
     $scope.$on('formError', function(event, error) {
@@ -370,25 +373,25 @@ angular.module('ngFormBuilderHelper')
     });
 
     $scope.$on('rowView', function (event, submission) {
-      $state.go($scope.basePath + 'form.submission.item.view', {
+      $state.go($scope.basePath + 'form.submission.view', {
         subId: submission._id
       });
     });
 
     $scope.$on('submissionView', function(event, submission) {
-      $state.go($scope.basePath + 'form.submission.item.view', {
+      $state.go($scope.basePath + 'form.submission.view', {
         subId: submission._id
       });
     });
 
     $scope.$on('submissionEdit', function(event, submission) {
-      $state.go($scope.basePath + 'form.submission.item.edit', {
+      $state.go($scope.basePath + 'form.submission.edit', {
         subId: submission._id
       });
     });
 
     $scope.$on('submissionDelete', function(event, submission) {
-      $state.go($scope.basePath + 'form.submission.item.delete', {
+      $state.go($scope.basePath + 'form.submission.delete', {
         subId: submission._id
       });
     });
@@ -530,7 +533,7 @@ angular.module('ngFormBuilderHelper', [
     $templateCache
   ) {
     $templateCache.put('formio-helper/formbuilder/index.html',
-      "<a ng-if=\"isAdministrator || formAccess(['create_all'])\" ui-sref=\"{{ basePath }}createForm({formType: 'form'})\" class=\"btn btn-primary\"><span class=\"glyphicon glyphicon-plus\"></span> Create Form</a>\n<span class=\"glyphicon glyphicon-refresh glyphicon-spin\" style=\"font-size: 2em;\" ng-if=\"loading\"></span>\n<table class=\"table table-striped\" style=\"margin-top: 20px;\">\n  <tbody>\n  <tr data-ng-repeat=\"form in forms\" ng-if=\"isAdministrator || hasAccess(form.name, ['create_own', 'create_all', 'read_all', 'create_own'])\">\n    <td>\n      <div class=\"row\">\n        <div class=\"col-sm-8\">\n          <a ui-sref=\"{{ basePath }}form.view({formId: form._id})\"><h5>{{ form.title }}</h5></a>\n        </div>\n        <div class=\"col-sm-4\">\n          <div class=\"button-group pull-right\" style=\"display:flex;\">\n            <a ng-if=\"isAdministrator || hasAccess(form.name, ['create_own', 'create_all'])\" ui-sref=\"{{ basePath }}form.view({formId: form._id})\" class=\"btn btn-default btn-xs\">\n              <span class=\"glyphicon glyphicon-pencil\"></span> Enter Data\n            </a>&nbsp;\n            <a ng-if=\"isAdministrator || hasAccess(form.name, ['read_all', 'create_own'])\" ui-sref=\"{{ basePath }}form.submission.index({formId: form._id})\" class=\"btn btn-default btn-xs\">\n              <span class=\"glyphicon glyphicon-list-alt\"></span> View Data\n            </a>&nbsp;\n            <a ng-if=\"isAdministrator || formAccess(['edit_all', 'create_all'])\" ui-sref=\"{{ basePath }}form.edit({formId: form._id})\" class=\"btn btn-default btn-xs\">\n              <span class=\"glyphicon glyphicon-edit\"></span> Edit Form\n            </a>&nbsp;\n            <a ng-if=\"isAdministrator || formAccess(['delete_all'])\" ui-sref=\"{{ basePath }}form.delete({formId: form._id, formType: 'form'})\" class=\"btn btn-default btn-xs\">\n              <span class=\"glyphicon glyphicon-trash\"></span>\n            </a>\n          </div>\n        </div>\n      </div>\n    </td>\n  </tr>\n  </tbody>\n</table>\n<bgf-pagination\n  collection=\"forms\"\n  url=\"formsUrl\"\n  per-page=\"formsPerPage\"\n  template-url=\"formio-helper/pager.html\"\n></bgf-pagination>\n"
+      "<a ng-if=\"isAdministrator || formAccess(['create_all'])\" ui-sref=\"{{ basePath }}createForm({formType: 'form'})\" class=\"btn btn-primary\"><span class=\"glyphicon glyphicon-plus\"></span> Create Form</a>\n<span class=\"glyphicon glyphicon-refresh glyphicon-spin\" style=\"font-size: 2em;\" ng-if=\"loading\"></span>\n<table class=\"table table-striped\" style=\"margin-top: 20px;\">\n  <tbody>\n  <tr data-ng-repeat=\"form in forms\" ng-if=\"isAdministrator || hasAccess(form.name, ['create_own', 'create_all', 'read_all', 'create_own'])\">\n    <td>\n      <div class=\"row\">\n        <div class=\"col-sm-8\">\n          <a ui-sref=\"{{ basePath }}form.view({formId: form._id})\"><h5>{{ form.title }}</h5></a>\n        </div>\n        <div class=\"col-sm-4\">\n          <div class=\"button-group pull-right\" style=\"display:flex;\">\n            <a ng-if=\"isAdministrator || hasAccess(form.name, ['create_own', 'create_all'])\" ui-sref=\"{{ basePath }}form.view({formId: form._id})\" class=\"btn btn-default btn-xs\">\n              <span class=\"glyphicon glyphicon-pencil\"></span> Enter Data\n            </a>&nbsp;\n            <a ng-if=\"isAdministrator || hasAccess(form.name, ['read_all', 'create_own'])\" ui-sref=\"{{ basePath }}form.submissionIndex({formId: form._id})\" class=\"btn btn-default btn-xs\">\n              <span class=\"glyphicon glyphicon-list-alt\"></span> View Data\n            </a>&nbsp;\n            <a ng-if=\"isAdministrator || formAccess(['edit_all', 'create_all'])\" ui-sref=\"{{ basePath }}form.edit({formId: form._id})\" class=\"btn btn-default btn-xs\">\n              <span class=\"glyphicon glyphicon-edit\"></span> Edit Form\n            </a>&nbsp;\n            <a ng-if=\"isAdministrator || formAccess(['delete_all'])\" ui-sref=\"{{ basePath }}form.delete({formId: form._id, formType: 'form'})\" class=\"btn btn-default btn-xs\">\n              <span class=\"glyphicon glyphicon-trash\"></span>\n            </a>\n          </div>\n        </div>\n      </div>\n    </td>\n  </tr>\n  </tbody>\n</table>\n<bgf-pagination\n  collection=\"forms\"\n  url=\"formsUrl\"\n  per-page=\"formsPerPage\"\n  template-url=\"formio-helper/pager.html\"\n></bgf-pagination>\n"
     );
 
     $templateCache.put('formio-helper/formbuilder/create.html',
@@ -546,7 +549,7 @@ angular.module('ngFormBuilderHelper', [
     );
 
     $templateCache.put('formio-helper/formbuilder/form.html',
-      "<h2>{{form.title}}</h2>\n<ul class=\"nav nav-tabs\">\n  <li role=\"presentation\" ng-if=\"isAdministrator || hasAccess(form.name, ['create_own', 'create_all'])\" ng-class=\"{active:isActive(basePath + 'form.view')}\"><a ui-sref=\"{{ basePath }}form.view()\">Enter Data</a></li>\n  <li role=\"presentation\" ng-if=\"isAdministrator || hasAccess(form.name, ['read_own', 'read_all'])\" ng-class=\"{active:isActive(basePath + 'form.submission')}\"><a ui-sref=\"{{ basePath }}form.submission.index()\">View Data</a></li>\n  <li role=\"presentation\" ng-if=\"isAdministrator || formAccess(['edit_all', 'create_all'])\" ng-class=\"{active:isActive(basePath + 'form.edit')}\"><a ui-sref=\"{{ basePath }}form.edit()\">Edit Form</a></li>\n  <li role=\"presentation\" ng-if=\"isAdministrator || formAccess(['edit_all', 'create_all'])\" ng-class=\"{active:isActive(basePath + 'form.action')}\"><a ui-sref=\"{{ basePath }}form.action.index()\">Form Actions</a></li>\n  <li role=\"presentation\" ng-if=\"isAdministrator || formAccess(['edit_all', 'create_all'])\" ng-class=\"{active:isActive(basePath + 'form.permission')}\"><a ui-sref=\"{{ basePath }}form.permission()\">Access</a></li>\n</ul>\n<div ui-view></div>\n"
+      "<h2>{{form.title}}</h2>\n<ul class=\"nav nav-tabs\">\n  <li role=\"presentation\" ng-if=\"isAdministrator || hasAccess(form.name, ['create_own', 'create_all'])\" ng-class=\"{active:isActive(basePath + 'form.view')}\"><a ui-sref=\"{{ basePath }}form.view()\">Enter Data</a></li>\n  <li role=\"presentation\" ng-if=\"isAdministrator || hasAccess(form.name, ['read_own', 'read_all'])\" ng-class=\"{active:isActive(basePath + 'form.submission')}\"><a ui-sref=\"{{ basePath }}form.submissionIndex()\">View Data</a></li>\n  <li role=\"presentation\" ng-if=\"isAdministrator || formAccess(['edit_all', 'create_all'])\" ng-class=\"{active:isActive(basePath + 'form.edit')}\"><a ui-sref=\"{{ basePath }}form.edit()\">Edit Form</a></li>\n  <li role=\"presentation\" ng-if=\"isAdministrator || formAccess(['edit_all', 'create_all'])\" ng-class=\"{active:isActive(basePath + 'form.action')}\"><a ui-sref=\"{{ basePath }}form.actionIndex()\">Form Actions</a></li>\n  <li role=\"presentation\" ng-if=\"isAdministrator || formAccess(['edit_all', 'create_all'])\" ng-class=\"{active:isActive(basePath + 'form.permission')}\"><a ui-sref=\"{{ basePath }}form.permission()\">Access</a></li>\n</ul>\n<div ui-view></div>\n"
     );
 
     $templateCache.put('formio-helper/formbuilder/settings.html',
@@ -570,11 +573,11 @@ angular.module('ngFormBuilderHelper', [
     );
 
     $templateCache.put('formio-helper/formbuilder/action/index.html',
-      "<br/>\n<div class=\"panel panel-info\">\n  <div class=\"panel-heading\">\n    <a class=\"pull-right\" href=\"http://help.form.io/userguide/#actions\" target=\"_blank\">\n      <i class=\"glyphicon glyphicon-question-sign \"></i></a>\n\n    <h3 class=\"panel-title\">Form Actions</h3>\n  </div>\n  <div class=\"panel-body\">\n    <table class=\"table table-striped\">\n      <thead>\n      <tr>\n        <th>Name</th>\n        <th>Operations</th>\n      </tr>\n      </thead>\n      <tbody>\n      <tr data-ng-repeat=\"action in actions\">\n        <td>\n          <span ng-if=\"!action._id\">{{ action.title }}</span>\n          <a ng-if=\"action._id\" ui-sref=\"{{ basePath }}form.action.item.edit({actionId: action._id})\">{{ action.title }}</a>\n        </td>\n        <td>\n          <span ng-if=\"!action._id\">none</span>\n\n          <div class=\"button-group\" style=\"display:flex;\" ng-if=\"action._id\">\n            <a ui-sref=\"{{ basePath }}form.action.item.edit({actionId: action._id})\" class=\"btn btn-default btn-xs\"><span\n              class=\"glyphicon glyphicon-edit\"></span></a>&nbsp;\n            <a ui-sref=\"{{ basePath }}form.action.item.delete({actionId: action._id})\" class=\"btn btn-danger btn-xs\"><span\n              class=\"glyphicon glyphicon-remove-circle\"></span></a>\n          </div>\n        </td>\n      </tr>\n      </tbody>\n    </table>\n  </div>\n  <div class=\"panel-footer\">\n    <form class=\"form-inline\">\n      <div class=\"form-group\">\n        <select id=\"action-select\" name=\"action-select\" ng-model=\"newAction\" class=\"form-control\"\n                ng-options=\"action as action.title for action in availableActions\"></select>\n      </div>\n      <a ng-click=\"addAction()\" class=\"btn btn-primary\"><span class=\"glyphicon glyphicon-plus\"></span> Add Action</a>\n    </form>\n  </div>\n</div>\n"
+      "<br/>\n<div class=\"panel panel-info\">\n  <div class=\"panel-heading\">\n    <a class=\"pull-right\" href=\"http://help.form.io/userguide/#actions\" target=\"_blank\">\n      <i class=\"glyphicon glyphicon-question-sign \"></i></a>\n\n    <h3 class=\"panel-title\">Form Actions</h3>\n  </div>\n  <div class=\"panel-body\">\n    <table class=\"table table-striped\">\n      <thead>\n      <tr>\n        <th>Name</th>\n        <th>Operations</th>\n      </tr>\n      </thead>\n      <tbody>\n      <tr data-ng-repeat=\"action in actions\">\n        <td>\n          <span ng-if=\"!action._id\">{{ action.title }}</span>\n          <a ng-if=\"action._id\" ui-sref=\"{{ basePath }}form.action.edit({actionId: action._id})\">{{ action.title }}</a>\n        </td>\n        <td>\n          <span ng-if=\"!action._id\">none</span>\n\n          <div class=\"button-group\" style=\"display:flex;\" ng-if=\"action._id\">\n            <a ui-sref=\"{{ basePath }}form.action.edit({actionId: action._id})\" class=\"btn btn-default btn-xs\"><span\n              class=\"glyphicon glyphicon-edit\"></span></a>&nbsp;\n            <a ui-sref=\"{{ basePath }}form.action.delete({actionId: action._id})\" class=\"btn btn-danger btn-xs\"><span\n              class=\"glyphicon glyphicon-remove-circle\"></span></a>\n          </div>\n        </td>\n      </tr>\n      </tbody>\n    </table>\n  </div>\n  <div class=\"panel-footer\">\n    <form class=\"form-inline\">\n      <div class=\"form-group\">\n        <select id=\"action-select\" name=\"action-select\" ng-model=\"newAction\" class=\"form-control\"\n                ng-options=\"action as action.title for action in availableActions\"></select>\n      </div>\n      <a ng-click=\"addAction()\" class=\"btn btn-primary\"><span class=\"glyphicon glyphicon-plus\"></span> Add Action</a>\n    </form>\n  </div>\n</div>\n"
     );
 
     $templateCache.put('formio-helper/formbuilder/action/item.html',
-      "<br/><ul class=\"nav nav-tabs action-nav\">\n    <li role=\"presentation\" ng-class=\"{active:isActive(basePath + 'form.action.item.edit')}\"><a ui-sref=\"{{ basePath }}form.action.item.edit()\">Edit</a></li>\n    <li role=\"presentation\" ng-class=\"{active:isActive(basePath + 'form.action.item.delete')}\"><a ui-sref=\"{{ basePath }}form.action.item.delete()\">Delete</a></li>\n</ul>\n<div ui-view></div>\n"
+      "<br/><ul class=\"nav nav-tabs action-nav\">\n    <li role=\"presentation\" ng-class=\"{active:isActive(basePath + 'form.action.edit')}\"><a ui-sref=\"{{ basePath }}form.action.edit()\">Edit</a></li>\n    <li role=\"presentation\" ng-class=\"{active:isActive(basePath + 'form.action.delete')}\"><a ui-sref=\"{{ basePath }}form.action.delete()\">Delete</a></li>\n</ul>\n<div ui-view></div>\n"
     );
 
     $templateCache.put('formio-helper/formbuilder/action/view.html',
@@ -602,7 +605,7 @@ angular.module('ngFormBuilderHelper', [
     );
 
     $templateCache.put('formio-helper/formbuilder/submission/item.html',
-      "<ul class=\"nav nav-pills submission-nav\" style=\"margin-top:20px;\">\n  <li role=\"presentation\" ng-class=\"{active:isActive(basePath + 'form.submission.item.view')}\"><a ui-sref=\"{{ basePath }}form.submission.item.view()\">View Submission</a></li>\n  <li role=\"presentation\" ng-class=\"{active:isActive(basePath + 'form.submission.item.edit')}\"><a ui-sref=\"{{ basePath }}form.submission.item.edit()\">Edit Submission</a></li>\n  <li role=\"presentation\" ng-class=\"{active:isActive(basePath + 'form.submission.item.delete')}\"><a ui-sref=\"{{ basePath }}form.submission.item.delete()\">Delete Submission</a></li>\n</ul>\n<div ui-view style=\"margin-top: 20px;\"></div>\n"
+      "<ul class=\"nav nav-pills submission-nav\" style=\"margin-top:20px;\">\n  <li role=\"presentation\" ng-class=\"{active:isActive(basePath + 'form.submission.view')}\"><a ui-sref=\"{{ basePath }}form.submission.view()\">View Submission</a></li>\n  <li role=\"presentation\" ng-class=\"{active:isActive(basePath + 'form.submission.edit')}\"><a ui-sref=\"{{ basePath }}form.submission.edit()\">Edit Submission</a></li>\n  <li role=\"presentation\" ng-class=\"{active:isActive(basePath + 'form.submission.delete')}\"><a ui-sref=\"{{ basePath }}form.submission.delete()\">Delete Submission</a></li>\n</ul>\n<div ui-view style=\"margin-top: 20px;\"></div>\n"
     );
 
     $templateCache.put('formio-helper/formbuilder/submission/view.html',
@@ -714,35 +717,30 @@ angular.module('ngFormBuilderHelper')
 
         angular.forEach(formStates, function(info, state) {
           $stateProvider
-            .state(state, {
-              abstract: true,
-              url: '/' + info.name,
-              template: '<div ui-view></div>'
-            })
-            .state(state + '.index', {
+            .state(state + 'Index', {
               url: '',
-              templateUrl: _.get(templates, 'form.' + info.name + '.index', 'formio-helper/formbuilder/' + info.name + '/index.html'),
+              templateUrl: _.get(templates, info.name + '.index', 'formio-helper/formbuilder/' + info.name + '/index.html'),
               controller: info.controller
             })
-            .state(state + '.item', {
+            .state(state, {
               abstract: true,
-              url: '/:' + info.id,
+              url: '/' + info.name + '/:' + info.id,
               controller: info.controller,
-              templateUrl: _.get(templates, 'form.' + info.name + '.abstract', 'formio-helper/formbuilder/' + info.name + '/item.html')
+              templateUrl: _.get(templates, info.name + '.abstract', 'formio-helper/formbuilder/' + info.name + '/item.html')
             })
-            .state(state + '.item.view', {
+            .state(state + '.view', {
               url: '',
-              templateUrl: _.get(templates, 'form.' + info.name + '.view', 'formio-helper/formbuilder/' + info.name + '/view.html'),
+              templateUrl: _.get(templates, info.name + '.view', 'formio-helper/formbuilder/' + info.name + '/view.html'),
               controller: ['$scope', '$controller', execute(info.name + '.view')]
             })
-            .state(state + '.item.edit', {
+            .state(state + '.edit', {
               url: '/edit',
-              templateUrl: _.get(templates, 'form.' + info.name + '.edit', 'formio-helper/formbuilder/' + info.name + '/edit.html'),
+              templateUrl: _.get(templates, info.name + '.edit', 'formio-helper/formbuilder/' + info.name + '/edit.html'),
               controller: ['$scope', '$controller', execute(info.name + '.edit')]
             })
-            .state(state + '.item.delete', {
+            .state(state + '.delete', {
               url: '/delete',
-              templateUrl: _.get(templates, 'form.' + info.name + '.delete', 'formio-helper/formbuilder/' + info.name + '/delete.html'),
+              templateUrl: _.get(templates, info.name + '.delete', 'formio-helper/formbuilder/' + info.name + '/delete.html'),
               controller: ['$scope', '$controller', execute(info.name + '.delete')]
             });
         });
@@ -750,7 +748,7 @@ angular.module('ngFormBuilderHelper')
         // Add the action adding state.
         $stateProvider.state(basePath + 'form.action.add', {
           url: '/add/:actionName',
-          templateUrl: _.get(templates, 'form.action.add', 'formio-helper/formbuilder/action/add.html'),
+          templateUrl: _.get(templates, 'action.add', 'formio-helper/formbuilder/action/add.html'),
           controller: ['$scope', '$controller', 'FormActionController', execute('action.add')],
           params: {actionInfo: null}
         });
@@ -758,7 +756,7 @@ angular.module('ngFormBuilderHelper')
         // Add permission state.
         $stateProvider.state(basePath + 'form.permission', {
           url: '/permission',
-          templateUrl: _.get(templates, 'form.permission.index', 'formio-helper/formbuilder/permission/index.html'),
+          templateUrl: _.get(templates, 'permission.index', 'formio-helper/formbuilder/permission/index.html'),
           controller: ['$scope', '$controller', 'RoleController', execute('permission.index')]
         });
       },
