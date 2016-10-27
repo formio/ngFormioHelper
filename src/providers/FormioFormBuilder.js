@@ -71,12 +71,12 @@ angular.module('ngFormBuilderHelper')
 
         var formStates = {};
         formStates[basePath + 'form.submission'] = {
-          path: '/submission',
+          name: 'submission',
           id: 'subId',
           controller: ['$scope', '$controller', 'FormSubmissionController', execute('submission.index')]
         };
         formStates[basePath + 'form.action'] = {
-          path: '/action',
+          name: 'action',
           id: 'actionId',
           controller: ['$scope', '$controller', 'FormActionController', execute('action.index')]
         };
@@ -85,31 +85,34 @@ angular.module('ngFormBuilderHelper')
           $stateProvider
             .state(state, {
               abstract: true,
-              url: info.path,
+              url: '/' + info.name,
               template: '<div ui-view></div>'
             })
             .state(state + '.index', {
               url: '',
-              templateUrl: _.get(templates, 'form.' + info.path + 'Index', 'formio-helper/formbuilder' + info.path + '/index.html'),
+              templateUrl: _.get(templates, 'form.' + info.name + '.index', 'formio-helper/formbuilder/' + info.name + '/index.html'),
               controller: info.controller
             })
             .state(state + '.item', {
               abstract: true,
               url: '/:' + info.id,
               controller: info.controller,
-              templateUrl: _.get(templates, 'form.' + info.path + 'Item', 'formio-helper/formbuilder' + info.path + '/item.html')
+              templateUrl: _.get(templates, 'form.' + info.name + '.abstract', 'formio-helper/formbuilder/' + info.name + '/item.html')
             })
             .state(state + '.item.view', {
               url: '',
-              templateUrl: _.get(templates, 'form.' + info.path + 'View', 'formio-helper/formbuilder' + info.path + '/view.html')
+              templateUrl: _.get(templates, 'form.' + info.name + '.view', 'formio-helper/formbuilder/' + info.name + '/view.html'),
+              controller: ['$scope', '$controller', execute(info.name + '.view')]
             })
             .state(state + '.item.edit', {
               url: '/edit',
-              templateUrl: _.get(templates, 'form.' + info.path + 'Edit', 'formio-helper/formbuilder' + info.path + '/edit.html')
+              templateUrl: _.get(templates, 'form.' + info.name + '.edit', 'formio-helper/formbuilder/' + info.name + '/edit.html'),
+              controller: ['$scope', '$controller', execute(info.name + '.edit')]
             })
             .state(state + '.item.delete', {
               url: '/delete',
-              templateUrl: _.get(templates, 'form.' + info.path + 'Delete', 'formio-helper/formbuilder' + info.path + '/delete.html')
+              templateUrl: _.get(templates, 'form.' + info.name + '.delete', 'formio-helper/formbuilder/' + info.name + '/delete.html'),
+              controller: ['$scope', '$controller', execute(info.name + '.delete')]
             });
         });
 
