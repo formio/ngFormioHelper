@@ -84,7 +84,7 @@ angular.module('ngFormBuilderHelper')
         angular.forEach(formStates, function(info, state) {
           $stateProvider
             .state(state + 'Index', {
-              url: '',
+              url: '/' + info.name,
               templateUrl: _.get(templates, info.name + '.index', 'formio-helper/formbuilder/' + info.name + '/index.html'),
               controller: info.controller
             })
