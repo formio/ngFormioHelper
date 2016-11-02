@@ -5,6 +5,11 @@ angular.module('ngFormioHelper')
     var alerts = [];
     return {
       addAlert: function (alert) {
+        // Do not add duplicate alerts.
+        if (_.find($rootScope.alerts, {message: alert.message})) {
+          return;
+        }
+
         $rootScope.alerts.push(alert);
         if (alert.element) {
           angular.element('#form-group-' + alert.element).addClass('has-error');
