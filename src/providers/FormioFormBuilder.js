@@ -83,35 +83,30 @@ angular.module('ngFormBuilderHelper')
 
         angular.forEach(formStates, function(info, state) {
           $stateProvider
-            .state(state, {
-              abstract: true,
+            .state(state + 'Index', {
               url: '/' + info.name,
-              template: '<div ui-view></div>'
-            })
-            .state(state + '.index', {
-              url: '',
-              templateUrl: _.get(templates, 'form.' + info.name + '.index', 'formio-helper/formbuilder/' + info.name + '/index.html'),
+              templateUrl: _.get(templates, info.name + '.index', 'formio-helper/formbuilder/' + info.name + '/index.html'),
               controller: info.controller
             })
-            .state(state + '.item', {
+            .state(state, {
               abstract: true,
-              url: '/:' + info.id,
+              url: '/' + info.name + '/:' + info.id,
               controller: info.controller,
-              templateUrl: _.get(templates, 'form.' + info.name + '.abstract', 'formio-helper/formbuilder/' + info.name + '/item.html')
+              templateUrl: _.get(templates, info.name + '.abstract', 'formio-helper/formbuilder/' + info.name + '/item.html')
             })
-            .state(state + '.item.view', {
+            .state(state + '.view', {
               url: '',
-              templateUrl: _.get(templates, 'form.' + info.name + '.view', 'formio-helper/formbuilder/' + info.name + '/view.html'),
+              templateUrl: _.get(templates, info.name + '.view', 'formio-helper/formbuilder/' + info.name + '/view.html'),
               controller: ['$scope', '$controller', execute(info.name + '.view')]
             })
-            .state(state + '.item.edit', {
+            .state(state + '.edit', {
               url: '/edit',
-              templateUrl: _.get(templates, 'form.' + info.name + '.edit', 'formio-helper/formbuilder/' + info.name + '/edit.html'),
+              templateUrl: _.get(templates, info.name + '.edit', 'formio-helper/formbuilder/' + info.name + '/edit.html'),
               controller: ['$scope', '$controller', execute(info.name + '.edit')]
             })
-            .state(state + '.item.delete', {
+            .state(state + '.delete', {
               url: '/delete',
-              templateUrl: _.get(templates, 'form.' + info.name + '.delete', 'formio-helper/formbuilder/' + info.name + '/delete.html'),
+              templateUrl: _.get(templates, info.name + '.delete', 'formio-helper/formbuilder/' + info.name + '/delete.html'),
               controller: ['$scope', '$controller', execute(info.name + '.delete')]
             });
         });
@@ -119,7 +114,7 @@ angular.module('ngFormBuilderHelper')
         // Add the action adding state.
         $stateProvider.state(basePath + 'form.action.add', {
           url: '/add/:actionName',
-          templateUrl: _.get(templates, 'form.action.add', 'formio-helper/formbuilder/action/add.html'),
+          templateUrl: _.get(templates, 'action.add', 'formio-helper/formbuilder/action/add.html'),
           controller: ['$scope', '$controller', 'FormActionController', execute('action.add')],
           params: {actionInfo: null}
         });
@@ -127,7 +122,7 @@ angular.module('ngFormBuilderHelper')
         // Add permission state.
         $stateProvider.state(basePath + 'form.permission', {
           url: '/permission',
-          templateUrl: _.get(templates, 'form.permission.index', 'formio-helper/formbuilder/permission/index.html'),
+          templateUrl: _.get(templates, 'permission.index', 'formio-helper/formbuilder/permission/index.html'),
           controller: ['$scope', '$controller', 'RoleController', execute('permission.index')]
         });
       },

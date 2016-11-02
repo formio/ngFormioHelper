@@ -143,18 +143,18 @@ angular.module('ngFormBuilderHelper')
     $scope.$on('formSubmission', function(event) {
       event.stopPropagation();
       FormioAlerts.addAlert({type: 'success', message: 'Action was updated.'});
-      $state.go($scope.basePath + 'form.action.index');
+      $state.go($scope.basePath + 'form.actionIndex');
     });
 
     $scope.$on('delete', function(event) {
       event.stopPropagation();
       FormioAlerts.addAlert({type: 'success', message: 'Action was deleted.'});
-      $state.go($scope.basePath + 'form.action.index');
+      $state.go($scope.basePath + 'form.actionIndex');
     });
 
     $scope.$on('cancel', function(event) {
       event.stopPropagation();
-      $state.go($scope.basePath + 'form.action.index');
+      $state.go($scope.basePath + 'form.actionIndex');
     });
   }
 ]);

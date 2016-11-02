@@ -31,8 +31,9 @@ angular.module('ngFormBuilderHelper')
 
     // Load the form if the id is provided.
     if ($stateParams.formId) {
-      $scope.formio.loadForm().then(function(form) {
+      $scope.formLoadPromise = $scope.formio.loadForm().then(function(form) {
         $scope.form = form;
+        return form;
       }, FormioAlerts.onError.bind(FormioAlerts));
     }
     else {
@@ -83,7 +84,7 @@ angular.module('ngFormBuilderHelper')
         message: 'New submission added!'
       });
       if (submission._id) {
-        $state.go($scope.basePath + 'form.submission.item.view', {subId: submission._id});
+        $state.go($scope.basePath + 'form.submission.view', {subId: submission._id});
       }
     });
 
