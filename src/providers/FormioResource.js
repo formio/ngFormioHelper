@@ -1,7 +1,11 @@
 angular.module('ngFormioHelper')
 .provider('FormioResource', [
   '$stateProvider',
-  function ($stateProvider) {
+  '$injector',
+  function (
+    $stateProvider,
+    $injector
+  ) {
     var resources = {};
     return {
       register: function (name, url, options) {
@@ -20,6 +24,22 @@ angular.module('ngFormioHelper')
           query[queryId] = submission._id;
           return query;
         };
+
+        var $breadcrumbProvider = null;
+        try {
+          $breadcrumbProvider = $injector.get('$breadcrumbProvider');
+        }
+        catch (error) {
+          $breadcrumbProvider = null;
+        }
+
+        // If we wish to enable breadcrumb functions.
+        if (options.breadcrumb && $breadcrumbProvider) {
+          $breadcrumbProvider.setOptions({
+            includeAbstract: true,
+            templateUrl: 'formio-helper/breadcrumb.html'
+          });
+        }
 
         // Allow them to alter the options per state.
         var baseAlter = function (options) {
@@ -43,6 +63,7 @@ angular.module('ngFormioHelper')
             params: options.params && options.params.index,
             data: options.data && options.data.index,
             templateUrl: templates.index ? templates.index : 'formio-helper/resource/index.html',
+            ncyBreadcrumb: {skip: true},
             controller: [
               '$scope',
               '$state',
@@ -96,6 +117,7 @@ angular.module('ngFormioHelper')
             params: options.params && options.params.create,
             data: options.data && options.data.create,
             templateUrl: templates.create ? templates.create : 'formio-helper/resource/create.html',
+            ncyBreadcrumb: {skip: true},
             controller: [
               '$scope',
               '$state',
@@ -143,6 +165,7 @@ angular.module('ngFormioHelper')
             url: '/' + name + '/:' + queryId,
             data: options.data && options.data.abstract,
             templateUrl: templates.abstract ? templates.abstract : 'formio-helper/resource/resource.html',
+            ncyBreadcrumb: options.breadcrumb ? {label: options.breadcrumb.label} : {skip: true},
             controller: [
               '$scope',
               '$stateParams',
@@ -210,6 +233,7 @@ angular.module('ngFormioHelper')
             params: options.params && options.params.view,
             data: options.data && options.data.view,
             templateUrl: templates.view ? templates.view : 'formio-helper/resource/view.html',
+            ncyBreadcrumb: {skip: true},
             controller: [
               '$scope',
               '$controller',
@@ -226,6 +250,7 @@ angular.module('ngFormioHelper')
             params: options.params && options.params.edit,
             data: options.data && options.data.edit,
             templateUrl: templates.edit ? templates.edit : 'formio-helper/resource/edit.html',
+            ncyBreadcrumb: {skip: true},
             controller: [
               '$scope',
               '$state',
@@ -258,6 +283,7 @@ angular.module('ngFormioHelper')
             params: options.params && options.params.delete,
             data: options.data && options.data.delete,
             templateUrl: templates.delete ? templates.delete : 'formio-helper/resource/delete.html',
+            ncyBreadcrumb: {skip: true},
             controller: [
               '$scope',
               '$state',

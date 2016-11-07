@@ -303,6 +303,10 @@ angular.module('ngFormioHelper', [
       "<div class=\"paginate-anything\">\n  <ul class=\"pagination pagination-{{size}} links\" ng-if=\"numPages > 1\">\n    <li ng-class=\"{disabled: page <= 0}\"><a href ng-click=\"gotoPage(page-1)\">&laquo;</a></li>\n    <li ng-if=\"linkGroupFirst() > 0\"><a href ng-click=\"gotoPage(0)\">1</a></li>\n    <li ng-if=\"linkGroupFirst() > 1\" class=\"disabled\"><a href>&hellip;</a></li>\n    <li ng-repeat=\"p in [linkGroupFirst(), linkGroupLast()] | makeRange\" ng-class=\"{active: p === page}\"><a href ng-click=\"gotoPage(p)\">{{p+1}}</a></li>\n    <li ng-if=\"linkGroupLast() < numPages - 2\" class=\"disabled\"><a href>&hellip;</a></li>\n    <li ng-if=\"isFinite() && linkGroupLast() < numPages - 1\"><a href ng-click=\"gotoPage(numPages-1)\">{{numPages}}</a></li>\n    <li ng-class=\"{disabled: page >= numPages - 1}\"><a href ng-click=\"gotoPage(page+1)\">&raquo;</a></li>\n  </ul>\n</div>\n"
     );
 
+    $templateCache.put('formio-helper/breadcrumb.html',
+      "<ol class=\"breadcrumb\">\n  <li ng-repeat=\"step in steps\" ng-class=\"{active: $last}\">\n    <a ui-sref=\"{{ step.name }}.view\" ng-bind-html=\"step.ncyBreadcrumbLabel\"></a>\n  </li>\n</ol>\n"
+    );
+
     /**** AUTH TEMPLATES ****/
     $templateCache.put('formio-helper/auth/auth.html',
       "<div class=\"col-md-8 col-md-offset-2\">\n    <div class=\"panel panel-default\">\n        <div class=\"panel-heading\" style=\"padding-bottom: 0; border-bottom: none;\">\n            <ul class=\"nav nav-tabs\" style=\"border-bottom: none;\">\n                <li role=\"presentation\" ng-class=\"{active:isActive('auth.login')}\"><a ui-sref=\"auth.login()\">Login</a></li>\n                <li role=\"presentation\" ng-class=\"{active:isActive('auth.register')}\"><a ui-sref=\"auth.register()\">Register</a></li>\n            </ul>\n        </div>\n        <div class=\"panel-body\">\n            <div class=\"row\">\n                <div class=\"col-lg-12\">\n                    <div ui-view></div>\n                </div>\n            </div>\n        </div>\n    </div>\n</div>\n"
@@ -411,6 +415,7 @@ require('./providers/FormioAuth.js');
 require('./providers/FormioForms.js');
 require('./providers/FormioOffline.js');
 require('./providers/FormioResource.js');
+
 },{"./components/resourcefields.js":1,"./directives/fileread.js":2,"./directives/formioForms.js":3,"./directives/offlineButton.js":4,"./directives/offlinePopup.js":5,"./factories/FormioAlerts.js":6,"./providers/FormioAuth.js":8,"./providers/FormioForms.js":9,"./providers/FormioOffline.js":10,"./providers/FormioResource.js":11}],8:[function(require,module,exports){
 "use strict";
 angular.module('ngFormioHelper')
@@ -1139,7 +1144,11 @@ angular.module('ngFormioHelper')
 angular.module('ngFormioHelper')
 .provider('FormioResource', [
   '$stateProvider',
-  function ($stateProvider) {
+  '$injector',
+  function (
+    $stateProvider,
+    $injector
+  ) {
     var resources = {};
     return {
       register: function (name, url, options) {
@@ -1158,6 +1167,22 @@ angular.module('ngFormioHelper')
           query[queryId] = submission._id;
           return query;
         };
+
+        var $breadcrumbProvider = null;
+        try {
+          $breadcrumbProvider = $injector.get('$breadcrumbProvider');
+        }
+        catch (error) {
+          $breadcrumbProvider = null;
+        }
+
+        // If we wish to enable breadcrumb functions.
+        if (options.breadcrumb && $breadcrumbProvider) {
+          $breadcrumbProvider.setOptions({
+            includeAbstract: true,
+            templateUrl: 'formio-helper/breadcrumb.html'
+          });
+        }
 
         // Allow them to alter the options per state.
         var baseAlter = function (options) {
@@ -1181,6 +1206,7 @@ angular.module('ngFormioHelper')
             params: options.params && options.params.index,
             data: options.data && options.data.index,
             templateUrl: templates.index ? templates.index : 'formio-helper/resource/index.html',
+            ncyBreadcrumb: {skip: true},
             controller: [
               '$scope',
               '$state',
@@ -1234,6 +1260,7 @@ angular.module('ngFormioHelper')
             params: options.params && options.params.create,
             data: options.data && options.data.create,
             templateUrl: templates.create ? templates.create : 'formio-helper/resource/create.html',
+            ncyBreadcrumb: {skip: true},
             controller: [
               '$scope',
               '$state',
@@ -1281,6 +1308,7 @@ angular.module('ngFormioHelper')
             url: '/' + name + '/:' + queryId,
             data: options.data && options.data.abstract,
             templateUrl: templates.abstract ? templates.abstract : 'formio-helper/resource/resource.html',
+            ncyBreadcrumb: options.breadcrumb ? {label: options.breadcrumb.label} : {skip: true},
             controller: [
               '$scope',
               '$stateParams',
@@ -1348,6 +1376,7 @@ angular.module('ngFormioHelper')
             params: options.params && options.params.view,
             data: options.data && options.data.view,
             templateUrl: templates.view ? templates.view : 'formio-helper/resource/view.html',
+            ncyBreadcrumb: {skip: true},
             controller: [
               '$scope',
               '$controller',
@@ -1364,6 +1393,7 @@ angular.module('ngFormioHelper')
             params: options.params && options.params.edit,
             data: options.data && options.data.edit,
             templateUrl: templates.edit ? templates.edit : 'formio-helper/resource/edit.html',
+            ncyBreadcrumb: {skip: true},
             controller: [
               '$scope',
               '$state',
@@ -1396,6 +1426,7 @@ angular.module('ngFormioHelper')
             params: options.params && options.params.delete,
             data: options.data && options.data.delete,
             templateUrl: templates.delete ? templates.delete : 'formio-helper/resource/delete.html',
+            ncyBreadcrumb: {skip: true},
             controller: [
               '$scope',
               '$state',
