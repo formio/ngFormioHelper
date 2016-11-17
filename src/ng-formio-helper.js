@@ -36,6 +36,10 @@ angular.module('ngFormioHelper', [
       fs.readFileSync(__dirname + '/templates/partials/pager.html', 'utf8')
     );
 
+    $templateCache.put('formio-helper/breadcrumb.html',
+      fs.readFileSync(__dirname + '/templates/partials/breadcrumb.html', 'utf8')
+    );
+
     /**** AUTH TEMPLATES ****/
     $templateCache.put('formio-helper/auth/auth.html',
       fs.readFileSync(__dirname + '/templates/auth/auth.html', 'utf8')
