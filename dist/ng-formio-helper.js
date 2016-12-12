@@ -765,6 +765,7 @@ angular.module('ngFormioHelper')
           .state(basePath + 'formIndex', {
             url: '/forms',
             params: options.params && options.params.index,
+            ncyBreadcrumb: {skip: true},
             templateUrl: templates.index ? templates.index : 'formio-helper/form/index.html',
             controller: ['$scope', 'Formio', '$controller', function ($scope, Formio, $controller) {
               $scope.formBase = basePath;
@@ -778,6 +779,7 @@ angular.module('ngFormioHelper')
           .state(basePath + 'form', {
             url: '/form/:formId',
             abstract: true,
+            ncyBreadcrumb: _.get(options, 'breadcrumb.form', {skip: true}),
             templateUrl: templates.form ? templates.form : 'formio-helper/form/form.html',
             controller: [
               '$scope',
@@ -811,6 +813,7 @@ angular.module('ngFormioHelper')
           .state(basePath + 'form.view', {
             url: '/',
             params: options.params && options.params.view,
+            ncyBreadcrumb: {skip: true},
             templateUrl: templates.view ? templates.view : 'formio-helper/form/view.html',
             controller: [
               '$scope',
@@ -851,6 +854,7 @@ angular.module('ngFormioHelper')
           })
           .state(basePath + 'form.submissions', {
             url: '/submissions',
+            ncyBreadcrumb: {skip: true},
             params: options.params && options.params.submissions,
             templateUrl: templates.submissions ? templates.submissions : 'formio-helper/submission/index.html',
             controller: [
@@ -910,6 +914,7 @@ angular.module('ngFormioHelper')
           .state(basePath + 'form.submission', {
             abstract: true,
             url: '/submission/:submissionId',
+            ncyBreadcrumb: _.get(options, 'breadcrumb.submission', {skip: true}),
             params: options.params && options.params.submission,
             templateUrl: templates.submission ? templates.submission : 'formio-helper/submission/submission.html',
             controller: [
@@ -947,6 +952,7 @@ angular.module('ngFormioHelper')
           .state(basePath + 'form.submission.view', {
             url: '/',
             params: options.params && options.params.submissionView,
+            ncyBreadcrumb: {skip: true},
             templateUrl: templates.submissionView ? templates.submissionView : 'formio-helper/submission/view.html',
             controller: [
               '$scope',
@@ -962,6 +968,7 @@ angular.module('ngFormioHelper')
           .state(basePath + 'form.submission.edit', {
             url: '/edit',
             params: options.params && options.params.submissionEdit,
+            ncyBreadcrumb: {skip: true},
             templateUrl: templates.submissionEdit ? templates.submissionEdit : 'formio-helper/submission/edit.html',
             controller: [
               '$scope',
@@ -987,6 +994,7 @@ angular.module('ngFormioHelper')
           .state(basePath + 'form.submission.delete', {
             url: '/delete',
             params: options.params && options.params.submissionDelete,
+            ncyBreadcrumb: {skip: true},
             templateUrl: templates.submissionDelete ? templates.submissionDelete : 'formio-helper/submission/delete.html',
             controller: [
               '$scope',
@@ -1019,6 +1027,7 @@ angular.module('ngFormioHelper')
     };
   }
 ]);
+
 },{}],10:[function(require,module,exports){
 "use strict";
 angular.module('ngFormioHelper')
