@@ -17,9 +17,13 @@ you don't want to use that, then you will need to add the ```<script>``` to your
 <script src="bower_components/ngFormioHelper/dist/ng-formio-helper.js"></script>
 ```
 
+About & Getting Started
+--------------
+To get started with this library, we recommend reading the [Wiki](https://github.com/formio/ngFormioHelper/wiki)
+
 Usage
 ---------------
-There are several providers that you can use within your application. See the wiki documentation for each provider's implementation details.
+There are several providers that you can use within your application. See the [wiki](https://github.com/formio/ngFormioHelper/wiki) documentation for each provider's implementation details.
 
 ### [FormioAlerts](https://github.com/formio/ngFormioHelper/wiki/FormioAlerts-Provider)
 
