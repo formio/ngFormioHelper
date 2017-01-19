@@ -5,12 +5,14 @@ angular.module('ngFormBuilderHelper')
   '$state',
   'Formio',
   'FormioAlerts',
+  '$timeout',
   function (
     $scope,
     $stateParams,
     $state,
     Formio,
-    FormioAlerts
+    FormioAlerts,
+    $timeout
   ) {
     $scope.token = Formio.getToken();
     $scope.submissionId = $stateParams.subId;
@@ -55,6 +57,14 @@ angular.module('ngFormBuilderHelper')
     $scope.$on('formError', function(event, error) {
       event.stopPropagation();
       FormioAlerts.onError(error);
+    });
+
+    $scope.$on('rowSelect', function (event, submission) {
+      $timeout(function() {
+        $state.go($scope.basePath + 'form.submission.view', {
+          subId: submission._id
+        });
+      });
     });
 
     $scope.$on('rowView', function (event, submission) {

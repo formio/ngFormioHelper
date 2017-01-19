@@ -127,11 +127,15 @@ angular.module('ngFormioHelper')
               '$stateParams',
               'FormioUtils',
               '$controller',
-              function ($scope,
-                        $state,
-                        $stateParams,
-                        FormioUtils,
-                        $controller) {
+              '$timeout',
+              function (
+                $scope,
+                $state,
+                $stateParams,
+                FormioUtils,
+                $controller,
+                $timeout
+              ) {
                 $scope.submissionQuery = {};
                 $scope.submissionColumns = [];
                 if (fields && fields.length) {
@@ -140,13 +144,18 @@ angular.module('ngFormioHelper')
                   });
                 }
 
-                // Go to the submission when they click on the row.
-                $scope.$on('rowView', function (event, entity) {
-                  $state.go(basePath + 'form.submission.view', {
-                    formId: entity.form,
-                    submissionId: entity._id
+                var gotoEntity = function(event, entity) {
+                  $timeout(function() {
+                    $state.go(basePath + 'form.submission.view', {
+                      formId: entity.form,
+                      submissionId: entity._id
+                    });
                   });
-                });
+                };
+
+                // Go to the submission when they click on the row.
+                $scope.$on('rowView', gotoEntity);
+                $scope.$on('rowSelect', gotoEntity);
 
                 if (controllers.submissions) {
                   $controller(controllers.submissions, {$scope: $scope});
