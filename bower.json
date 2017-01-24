@@ -1,6 +1,6 @@
 {
   "name": "ng-formio-helper",
-  "version": "0.24.0",
+  "version": "0.24.1",
   "authors": [
     "Travis Tidwell <travis@form.io>"
   ],
@@ -22,7 +22,7 @@
     "angular-ui-router": "^0.3.2",
     "lodash": "^4.17.4",
     "ng-formio": "^2.8.2",
-    "ng-formio-grid": "^0.12.0",
+    "ng-formio-grid": "^0.12.1",
     "angular-paginate-anything": "^4.2.0",
     "ng-formio-builder": "^2.8.1"
   },
