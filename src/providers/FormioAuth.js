@@ -52,14 +52,17 @@ angular.module('ngFormioHelper')
             url: '/' + path,
             parent: 'auth',
             templateUrl: noOverride ? 'formio-helper/auth/' + tpl : 'views/user/' + tpl,
-            controller: ['$scope', '$state', '$rootScope', function ($scope, $state, $rootScope) {
+            controller: ['$scope', '$state', '$rootScope', '$q', function ($scope, $state, $rootScope, $q) {
               $scope.currentForm = form;
               $scope.$on('formSubmission', function (err, submission) {
                 if (!submission) {
                   return;
                 }
-                $rootScope.setUser(submission, resource);
-                $state.go(authState);
+
+                $q.all([$rootScope.projectPromise, $rootScope.accessPromise]).then(function() {
+                  $rootScope.setUser(submission, resource);
+                  $state.go(authState);
+                });
               });
             }]
           })
