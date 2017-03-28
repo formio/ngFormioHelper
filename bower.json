@@ -24,7 +24,8 @@
     "ng-formio": "^2.10.2",
     "ng-formio-grid": "^0.12.2",
     "angular-paginate-anything": "^4.2.0",
-    "ng-formio-builder": "^2.10.2"
+    "ng-formio-builder": "^2.10.2",
+    "ng-tags-input": "^3.1.1"
   },
   "main": [
     "dist/ng-formio-helper.js",

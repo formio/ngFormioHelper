@@ -27,12 +27,15 @@ angular.module('ngFormBuilderHelper')
       type: ($stateParams.formType ? $stateParams.formType : 'form'),
       tags: [formTag]
     };
+    $scope.tags = [{text: formTag}];
     $scope.formio = new Formio($scope.formUrl);
 
     // Load the form if the id is provided.
     if ($stateParams.formId) {
       $scope.formLoadPromise = $scope.formio.loadForm().then(function(form) {
         $scope.form = form;
+        var tags = form.tags || [];
+        $scope.tags = tags.map(function(tag) { return {text: tag}; });
         return form;
       }, FormioAlerts.onError.bind(FormioAlerts));
     }
@@ -75,6 +78,11 @@ angular.module('ngFormBuilderHelper')
       if (!$scope.form.name || $scope.form.name === _.camelCase(oldTitle)) {
         $scope.form.name = _.camelCase($scope.form.title);
       }
+    };
+
+    // Update form tags
+    $scope.updateFormtags = function() {
+      $scope.form.tags = $scope.tags.map(function(tag) { return tag.text; });
     };
 
     // When a submission is made.

@@ -12,6 +12,11 @@
     <input type="text" class="form-control" id="path" ng-model="form.path" placeholder="example" style="width: 200px; text-transform: lowercase">
     <small>The path alias for this form.</small>
   </div>
+  <div id="form-group-path" class="form-group">
+    <label for="tags" class="control-label">Tags</label>
+    <tags-input ng-model="tags" ng-change="updateFormTags()" id="tags">
+    </tags-input>
+  </div>
   <input type="hidden" ng-model="form.type"/>
   <div ng-include="'formio-helper/formbuilder/settings.html'"></div>
   <form-builder form="form" src="formUrl"></form-builder>
