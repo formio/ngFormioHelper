@@ -66,7 +66,7 @@ angular.module('ngFormBuilderHelper')
             url: '/edit',
             ncyBreadcrumb: {skip: true},
             templateUrl: _.get(templates, 'form.edit', 'formio-helper/formbuilder/edit.html'),
-            controller: ['$scope', '$controller', execute('form.edit')]
+            controller: ['$scope', '$controller', 'FormController', execute('form.edit')]
           })
           .state(basePath + 'form.delete', {
             url: '/delete',
