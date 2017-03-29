@@ -25,8 +25,10 @@ angular.module('ngFormBuilderHelper')
     $scope.form = {
       components:[],
       type: ($stateParams.formType ? $stateParams.formType : 'form'),
-      tags: [formTag]
+      tags: [formTag],
+      settings: {}
     };
+    $scope.settings = [];
     $scope.formio = new Formio($scope.formUrl);
 
     // Load the form if the id is provided.
@@ -74,6 +76,34 @@ angular.module('ngFormBuilderHelper')
     $scope.titleChange = function(oldTitle) {
       if (!$scope.form.name || $scope.form.name === _.camelCase(oldTitle)) {
         $scope.form.name = _.camelCase($scope.form.title);
+      }
+    };
+
+    // Update form setttings
+    $scope.updateSettings = function() {
+      var settings = {};
+      for(var index in $scope.settings) {
+        settings[$scope.settings[index].key] = $scope.settings[index].value;
+      }
+      $scope.form.settings = settings;
+    };
+
+    // Add a setting in the list
+    $scope.addSetting = function() {
+      if (typeof $scope.form.settings[''] == 'undefined') {
+        $scope.settings.push({key: '', value: ''});
+        $scope.updateSettings();
+      }
+    };
+
+    // Remove a settings
+    $scope.removeSetting = function(key) {
+      for(var index in $scope.settings) {
+        if ($scope.settings[index].key == key) {
+          $scope.settings.splice(index, 1);
+          $scope.updateSettings();
+          break;
+        }
       }
     };
 
