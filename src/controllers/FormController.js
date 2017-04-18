@@ -104,13 +104,14 @@ angular.module('ngFormBuilderHelper')
       FormioAlerts.onError(error);
     });
 
-    // Called when the form is deleted.
+    // Called when the form or resource is deleted.
     $scope.$on('delete', function() {
+      var type = $scope.form.type === 'form' ? 'Form ' : 'Resource ';
       FormioAlerts.addAlert({
         type: 'success',
-        message: 'Form was deleted.'
+        message: type + $scope.form.name + ' was deleted.'
       });
-      $state.go($scope.basePath + 'formIndex');
+      $state.go($scope.basePath + 'home');
     });
 
     $scope.$on('cancel', function() {
