@@ -87,6 +87,9 @@ angular.module('ngFormBuilderHelper')
       if (!$scope.form.name || $scope.form.name === _.camelCase(oldTitle)) {
         $scope.form.name = _.camelCase($scope.form.title);
       }
+      if ($scope.$parent && $scope.$parent.form) {
+        $scope.$parent.form.title = $scope.form.title;
+      }
     };
 
     // When display is updated
