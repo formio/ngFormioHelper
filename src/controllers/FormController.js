@@ -23,15 +23,27 @@ angular.module('ngFormBuilderHelper')
     var formTag = FormioHelperConfig.tag || 'common';
     $scope.formUrl += $stateParams.formId ? ('/' + $stateParams.formId) : '';
     $scope.form = {
+      display: 'form',
       components:[],
       type: ($stateParams.formType ? $stateParams.formType : 'form'),
       tags: [formTag]
     };
     $scope.formio = new Formio($scope.formUrl);
+    $scope.formDisplays = [
+      {
+        name: 'form',
+        title: 'Form'
+      },
+      {
+        name: 'wizard',
+        title: 'Wizard'
+      }
+    ];
 
     // Load the form if the id is provided.
     if ($stateParams.formId) {
       $scope.formLoadPromise = $scope.formio.loadForm().then(function(form) {
+        form.display = form.display || 'form';
         $scope.form = form;
         return form;
       }, FormioAlerts.onError.bind(FormioAlerts));
@@ -76,6 +88,11 @@ angular.module('ngFormBuilderHelper')
         $scope.form.name = _.camelCase($scope.form.title);
       }
     };
+
+    // When display is updated
+    $scope.$watch('form.display', function (display) {
+      $scope.$broadcast('formDisplay', display);
+    });
 
     // When a submission is made.
     $scope.$on('formSubmission', function(event, submission) {
