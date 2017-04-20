@@ -1,1 +1,30 @@
+<form role="form" novalidate>
+    <div class="panel panel-default">
+        <div class="panel-heading">
+        <h3 class="panel-title">Advanced Settings</h3>
+        </div>
+        <div class="panel-body">
+            <div id="form-group-settings" class="form-group">
+                <label for="settings" class="control-label">Add custom key/value properties in the form</label>
 
+                <div ng-repeat="setting in settings" class="input-group">
+                    <input type="text" class="form-control" ng-model="setting.key" placeholder="Key" ng-change="updateSettings()">
+                    <div class="input-group-addon">=</div>
+                    <input type="text" class="form-control" ng-model="setting.value" placeholder="Value" ng-change="updateSettings()">
+                    <div class="input-group-addon">
+                        <div class="btn btn-xxs btn-danger component-settings-button" title="Remvove" ng-click="removeSetting(setting.key)">
+                            <span class="glyphicon glyphicon-remove"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <input type="button" class="btn btn-primary" ng-click="addSetting()" value="Add a setting" />
+            </div>
+        </div>
+    </div>
+    <div class="form-group pull-right">
+        <a class="btn btn-default" ng-click="cancel()">Cancel</a>
+        <input type="submit" class="btn btn-primary" ng-click="saveForm()" value="Save" />
+    </div>
+</form>

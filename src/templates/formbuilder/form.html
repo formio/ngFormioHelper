@@ -5,5 +5,6 @@
   <li role="presentation" ng-if="isAdministrator || formAccess(['edit_all', 'create_all'])" ng-class="{active:isActive(basePath + 'form.edit')}"><a ui-sref="{{ basePath }}form.edit()">Edit Form</a></li>
   <li role="presentation" ng-if="isAdministrator || formAccess(['edit_all', 'create_all'])" ng-class="{active:isActive(basePath + 'form.action')}"><a ui-sref="{{ basePath }}form.actionIndex()">Form Actions</a></li>
   <li role="presentation" ng-if="isAdministrator || formAccess(['edit_all', 'create_all'])" ng-class="{active:isActive(basePath + 'form.permission')}"><a ui-sref="{{ basePath }}form.permission()">Access</a></li>
+  <li role="presentation" ng-if="isAdministrator || formAccess(['edit_all', 'create_all'])" ng-class="{active:isActive(basePath + 'form.settings')}"><a ui-sref="{{ basePath }}form.settings()">Settings</a></li>
 </ul>
 <div ui-view></div>
