@@ -26,10 +26,8 @@ angular.module('ngFormBuilderHelper')
       display: 'form',
       components:[],
       type: ($stateParams.formType ? $stateParams.formType : 'form'),
-      tags: [formTag],
-      settings: {}
+      tags: [formTag]
     };
-    $scope.settings = [];
     $scope.tags = [{text: formTag}];
     $scope.formio = new Formio($scope.formUrl);
     $scope.formDisplays = [
@@ -102,34 +100,6 @@ angular.module('ngFormBuilderHelper')
       $scope.form.tags = $scope.tags.map(function(tag) { return tag.text; });
     };
 
-    // Update form setttings
-    $scope.updateSettings = function() {
-      var settings = {};
-      for(var index in $scope.settings) {
-        settings[$scope.settings[index].key] = $scope.settings[index].value;
-      }
-      $scope.form.settings = settings;
-    };
-
-    // Add a setting in the list
-    $scope.addSetting = function() {
-      if (typeof $scope.form.settings[''] == 'undefined') {
-        $scope.settings.push({key: '', value: ''});
-        $scope.updateSettings();
-      }
-    };
-
-    // Remove a settings
-    $scope.removeSetting = function(key) {
-      for(var index in $scope.settings) {
-        if ($scope.settings[index].key == key) {
-          $scope.settings.splice(index, 1);
-          $scope.updateSettings();
-          break;
-        }
-      }
-    };
-      
     // When display is updated
     $scope.$watch('form.display', function (display) {
       $scope.$broadcast('formDisplay', display);
