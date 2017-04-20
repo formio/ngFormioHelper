@@ -179,6 +179,7 @@ angular.module('ngFormBuilderHelper')
     // Save a form.
     $scope.saveForm = function() {
       $scope.formio.saveForm(angular.copy($scope.form)).then(function(form) {
+        angular.merge($scope.form, form);
         var method = $stateParams.formId ? 'updated' : 'created';
         FormioAlerts.addAlert({
           type: 'success',
