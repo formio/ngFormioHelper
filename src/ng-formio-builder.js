@@ -4,6 +4,7 @@ angular.module('ngFormBuilderHelper', [
   'ngFormBuilder',
   'ngFormioGrid',
   'ngFormioHelper',
+  'ngTagsInput',
   'ui.router',
   'bgf.paginateAnything'
 ])

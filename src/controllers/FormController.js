@@ -28,6 +28,7 @@ angular.module('ngFormBuilderHelper')
       type: ($stateParams.formType ? $stateParams.formType : 'form'),
       tags: [formTag]
     };
+    $scope.tags = [{text: formTag}];
     $scope.formio = new Formio($scope.formUrl);
     $scope.formDisplays = [
       {
@@ -45,6 +46,8 @@ angular.module('ngFormBuilderHelper')
       $scope.formLoadPromise = $scope.formio.loadForm().then(function(form) {
         form.display = form.display || 'form';
         $scope.form = form;
+        var tags = form.tags || [];
+        $scope.tags = tags.map(function(tag) { return {text: tag}; });
         return form;
       }, FormioAlerts.onError.bind(FormioAlerts));
     }
@@ -90,6 +93,11 @@ angular.module('ngFormBuilderHelper')
       if ($scope.$parent && $scope.$parent.form) {
         $scope.$parent.form.title = $scope.form.title;
       }
+    };
+
+    // Update form tags
+    $scope.updateFormtags = function() {
+      $scope.form.tags = $scope.tags.map(function(tag) { return tag.text; });
     };
 
     // When display is updated
