@@ -269,6 +269,7 @@ angular.module('ngFormioHelper')
 angular.module('ngFormioHelper', [
   'formio',
   'ngFormioGrid',
+  'ngTagsInput',
   'ui.router'
 ])
 .filter('capitalize', [function () {
@@ -479,7 +480,7 @@ angular.module('ngFormioHelper')
                   return;
                 }
 
-                $q.all([$rootScope.projectPromise, $rootScope.accessPromise]).then(function() {
+                $q.all([$rootScope.projectRequest(), $rootScope.accessRequest()]).then(function() {
                   $rootScope.setUser(submission, resource);
                   $state.go(authState);
                 });
@@ -509,29 +510,35 @@ angular.module('ngFormioHelper')
               init = true;
 
               // Load the project.
-              $rootScope.projectPromise = Formio.makeStaticRequest(Formio.getAppUrl()).then(function(project) {
-                angular.forEach(project.access, function(access) {
-                  formAccess[access.type] = access.roles;
+              $rootScope.projectRequest = function () {
+                return Formio.makeStaticRequest(Formio.getAppUrl()).then(function(project) {
+                  angular.forEach(project.access, function(access) {
+                    formAccess[access.type] = access.roles;
+                  });
+                }, function(err) {
+                  formAccess = {};
+                  return null;
                 });
-              }, function(err) {
-                formAccess = {};
-                return null;
-              });
+              };
+              $rootScope.projectPromise = $rootScope.projectRequest();
 
               // Get the access for this project.
-              $rootScope.accessPromise = Formio.makeStaticRequest(Formio.getAppUrl() + '/access').then(function(access) {
-                angular.forEach(access.forms, function(form) {
-                  submissionAccess[form.name] = {};
-                  form.submissionAccess.forEach(function(access) {
-                    submissionAccess[form.name][access.type] = access.roles;
+              $rootScope.accessRequest = function () {
+                return Formio.makeStaticRequest(Formio.getAppUrl() + '/access').then(function(access) {
+                  angular.forEach(access.forms, function(form) {
+                    submissionAccess[form.name] = {};
+                    form.submissionAccess.forEach(function(access) {
+                      submissionAccess[form.name][access.type] = access.roles;
+                    });
                   });
+                  roles = access.roles;
+                  return access;
+                }, function(err) {
+                  roles = {};
+                  return null;
                 });
-                roles = access.roles;
-                return access;
-              }, function(err) {
-                roles = {};
-                return null;
-              });
+              };
+              $rootScope.accessPromise = $rootScope.accessRequest();
 
               $rootScope.user = null;
               $rootScope.isReady = false;

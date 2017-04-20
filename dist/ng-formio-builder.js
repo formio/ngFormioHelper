@@ -188,16 +188,31 @@ angular.module('ngFormBuilderHelper')
     var formTag = FormioHelperConfig.tag || 'common';
     $scope.formUrl += $stateParams.formId ? ('/' + $stateParams.formId) : '';
     $scope.form = {
+      display: 'form',
       components:[],
       type: ($stateParams.formType ? $stateParams.formType : 'form'),
       tags: [formTag]
     };
+    $scope.tags = [{text: formTag}];
     $scope.formio = new Formio($scope.formUrl);
+    $scope.formDisplays = [
+      {
+        name: 'form',
+        title: 'Form'
+      },
+      {
+        name: 'wizard',
+        title: 'Wizard'
+      }
+    ];
 
     // Load the form if the id is provided.
     if ($stateParams.formId) {
       $scope.formLoadPromise = $scope.formio.loadForm().then(function(form) {
+        form.display = form.display || 'form';
         $scope.form = form;
+        var tags = form.tags || [];
+        $scope.tags = tags.map(function(tag) { return {text: tag}; });
         return form;
       }, FormioAlerts.onError.bind(FormioAlerts));
     }
@@ -240,7 +255,20 @@ angular.module('ngFormBuilderHelper')
       if (!$scope.form.name || $scope.form.name === _.camelCase(oldTitle)) {
         $scope.form.name = _.camelCase($scope.form.title);
       }
+      if ($scope.$parent && $scope.$parent.form) {
+        $scope.$parent.form.title = $scope.form.title;
+      }
     };
+
+    // Update form tags
+    $scope.updateFormtags = function() {
+      $scope.form.tags = $scope.tags.map(function(tag) { return tag.text; });
+    };
+
+    // When display is updated
+    $scope.$watch('form.display', function (display) {
+      $scope.$broadcast('formDisplay', display);
+    });
 
     // When a submission is made.
     $scope.$on('formSubmission', function(event, submission) {
@@ -269,13 +297,14 @@ angular.module('ngFormBuilderHelper')
       FormioAlerts.onError(error);
     });
 
-    // Called when the form is deleted.
+    // Called when the form or resource is deleted.
     $scope.$on('delete', function() {
+      var type = $scope.form.type === 'form' ? 'Form ' : 'Resource ';
       FormioAlerts.addAlert({
         type: 'success',
-        message: 'Form was deleted.'
+        message: type + $scope.form.name + ' was deleted.'
       });
-      $state.go($scope.basePath + 'formIndex');
+      $state.go($scope.basePath + 'home');
     });
 
     $scope.$on('cancel', function() {
@@ -505,6 +534,7 @@ angular.module('ngFormBuilderHelper', [
   'ngFormBuilder',
   'ngFormioGrid',
   'ngFormioHelper',
+  'ngTagsInput',
   'ui.router',
   'bgf.paginateAnything'
 ])
@@ -556,7 +586,7 @@ angular.module('ngFormBuilderHelper', [
     );
 
     $templateCache.put('formio-helper/formbuilder/edit.html',
-      "<form role=\"form\" novalidate>\n  <div id=\"form-group-title\" class=\"form-group\">\n    <label for=\"title\" class=\"control-label\">Title</label>\n    <input type=\"text\" ng-model=\"form.title\" ng-change=\"titleChange('{{form.title}}')\" class=\"form-control\" id=\"title\" placeholder=\"Enter the form title\"/>\n  </div>\n  <div id=\"form-group-name\" class=\"form-group\">\n    <label for=\"name\" class=\"control-label\">Name</label>\n    <input type=\"text\" ng-model=\"form.name\" class=\"form-control\" id=\"name\" placeholder=\"Enter the form machine name\"/>\n  </div>\n  <div id=\"form-group-path\" class=\"form-group\">\n    <label for=\"path\" class=\"control-label\">Path</label>\n    <input type=\"text\" class=\"form-control\" id=\"path\" ng-model=\"form.path\" placeholder=\"example\" style=\"width: 200px; text-transform: lowercase\">\n    <small>The path alias for this form.</small>\n  </div>\n  <input type=\"hidden\" ng-model=\"form.type\"/>\n  <div ng-include=\"'formio-helper/formbuilder/settings.html'\"></div>\n  <form-builder form=\"form\" src=\"formUrl\"></form-builder>\n  <div class=\"form-group pull-right\">\n    <a class=\"btn btn-default\" ng-click=\"cancel()\">Cancel</a>\n    <input type=\"submit\" class=\"btn btn-primary\" ng-click=\"saveForm()\" value=\"{{formId ? 'Save' : 'Create'}} {{ capitalize(form.type)  }}\" />\n  </div>\n</form>\n"
+      "<form role=\"form\" novalidate>\n  <div id=\"form-group-title\" class=\"form-group\">\n    <label for=\"title\" class=\"control-label\">Title</label>\n    <input type=\"text\" ng-model=\"form.title\" ng-change=\"titleChange('{{form.title}}')\" class=\"form-control\" id=\"title\" placeholder=\"Enter the form title\"/>\n  </div>\n  <div id=\"form-group-name\" class=\"form-group\">\n    <label for=\"name\" class=\"control-label\">Name</label>\n    <input type=\"text\" ng-model=\"form.name\" class=\"form-control\" id=\"name\" placeholder=\"Enter the form machine name\"/>\n  </div>\n  <div class=\"row\">\n    <div class=\"col col-sm-4\">\n      <div id=\"form-group-path\" class=\"form-group\">\n        <label for=\"path\" class=\"control-label\">Path</label>\n        <input type=\"text\" class=\"form-control\" id=\"path\" ng-model=\"form.path\" placeholder=\"example\" style=\"text-transform: lowercase\">\n        <small>The path alias for this form.</small>\n      </div>\n    </div>\n    <div class=\"col col-sm-4\">\n      <div id=\"form-group-display\" class=\"form-group\">\n        <label for=\"display\" class=\"control-label\">Display as</label>\n        <select class=\"form-control\" id=\"display\" ng-options=\"display.name as display.title for display in formDisplays\" ng-model=\"form.display\"></select>\n      </div>\n    </div>\n    <div class=\"col col-sm-4\">\n      <div id=\"form-group-tags\" class=\"form-group\">\n        <label for=\"tags\" class=\"control-label\">Tags</label>\n        <tags-input ng-model=\"tags\" ng-change=\"updateFormTags()\" id=\"tags\"></tags-input>\n      </div>\n    </div>\n  </div>\n  <input type=\"hidden\" ng-model=\"form.type\"/>\n  <div ng-include=\"'formio-helper/formbuilder/settings.html'\"></div>\n  <form-builder form=\"form\" src=\"formUrl\"></form-builder>\n  <div class=\"form-group pull-right\">\n    <a class=\"btn btn-default\" ng-click=\"cancel()\">Cancel</a>\n    <input type=\"submit\" class=\"btn btn-primary\" ng-click=\"saveForm()\" value=\"{{formId ? 'Save' : 'Create'}} {{ capitalize(form.type)  }}\" />\n  </div>\n</form>\n"
     );
 
     $templateCache.put('formio-helper/formbuilder/form.html',
@@ -711,7 +741,7 @@ angular.module('ngFormBuilderHelper')
             url: '/edit',
             ncyBreadcrumb: {skip: true},
             templateUrl: _.get(templates, 'form.edit', 'formio-helper/formbuilder/edit.html'),
-            controller: ['$scope', '$controller', execute('form.edit')]
+            controller: ['$scope', '$controller', 'FormController', execute('form.edit')]
           })
           .state(basePath + 'form.delete', {
             url: '/delete',
