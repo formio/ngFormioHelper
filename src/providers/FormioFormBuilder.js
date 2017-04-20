@@ -73,7 +73,7 @@ angular.module('ngFormBuilderHelper')
             ncyBreadcrumb: {skip: true},
             templateUrl: _.get(templates, 'form.delete', 'formio-helper/formbuilder/delete.html'),
             controller: ['$scope', '$controller', execute('form.delete')]
-          });
+          })
           .state(basePath + 'form.settings', {
             url: '/settings',
             ncyBreadcrumb: {skip: true},
