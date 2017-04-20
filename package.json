@@ -35,7 +35,7 @@
     "lodash": "^4.17.4",
     "ng-formio": "^2.15.6",
     "ng-formio-builder": "^2.15.6",
-    "ng-formio-grid": "^0.12.2"
+    "ng-formio-grid": "^1.0.0"
   },
   "browserify": {
     "transform": [
