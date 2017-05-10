@@ -50,7 +50,6 @@ angular.module('ngFormioHelper')
         $stateProvider
           .state('auth.' + name, {
             url: '/' + path,
-            parent: 'auth',
             templateUrl: noOverride ? 'formio-helper/auth/' + tpl : 'views/user/' + tpl,
             controller: ['$scope', '$state', '$rootScope', '$q', function ($scope, $state, $rootScope, $q) {
               $scope.currentForm = form;

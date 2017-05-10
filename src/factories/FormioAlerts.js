@@ -3,6 +3,9 @@ angular.module('ngFormioHelper')
   '$rootScope',
   function ($rootScope) {
     var alerts = [];
+    if (!$rootScope.alerts) {
+      $rootScope.alerts = [];
+    }
     return {
       addAlert: function (alert) {
         // Do not add duplicate alerts.
@@ -22,6 +25,7 @@ angular.module('ngFormioHelper')
         var tempAlerts = angular.copy(alerts);
         alerts.length = 0;
         alerts = [];
+        $rootScope.alerts = [];
         return tempAlerts;
       },
       onError: function showError(error) {

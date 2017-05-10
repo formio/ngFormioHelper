@@ -225,6 +225,9 @@ angular.module('ngFormioHelper')
   '$rootScope',
   function ($rootScope) {
     var alerts = [];
+    if (!$rootScope.alerts) {
+      $rootScope.alerts = [];
+    }
     return {
       addAlert: function (alert) {
         // Do not add duplicate alerts.
@@ -244,6 +247,7 @@ angular.module('ngFormioHelper')
         var tempAlerts = angular.copy(alerts);
         alerts.length = 0;
         alerts = [];
+        $rootScope.alerts = [];
         return tempAlerts;
       },
       onError: function showError(error) {
@@ -471,7 +475,6 @@ angular.module('ngFormioHelper')
         $stateProvider
           .state('auth.' + name, {
             url: '/' + path,
-            parent: 'auth',
             templateUrl: noOverride ? 'formio-helper/auth/' + tpl : 'views/user/' + tpl,
             controller: ['$scope', '$state', '$rootScope', '$q', function ($scope, $state, $rootScope, $q) {
               $scope.currentForm = form;
