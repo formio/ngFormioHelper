@@ -96,7 +96,7 @@ angular.module('ngFormBuilderHelper')
     };
 
     // Update form tags
-    $scope.updateFormtags = function() {
+    $scope.updateFormTags = function() {
       $scope.form.tags = $scope.tags.map(function(tag) { return tag.text; });
     };
 

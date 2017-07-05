@@ -24,7 +24,7 @@
     <div class="col col-sm-4">
       <div id="form-group-tags" class="form-group">
         <label for="tags" class="control-label">Tags</label>
-        <tags-input ng-model="tags" ng-change="updateFormTags()" id="tags"></tags-input>
+        <tags-input ng-model="tags" on-tag-added="updateFormTags()" on-tag-removed="updateFormTags()" id="tags"></tags-input>
       </div>
     </div>
   </div>
