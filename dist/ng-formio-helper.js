@@ -485,7 +485,17 @@ angular.module('ngFormioHelper')
 
                 $q.all([$rootScope.projectRequest(), $rootScope.accessRequest()]).then(function() {
                   $rootScope.setUser(submission, resource);
-                  $state.go(authState);
+
+                  var authRedirect = window.sessionStorage.getItem('authRedirect');
+
+                  if (authRedirect) {
+                    authRedirect = JSON.parse(authRedirect);
+                    window.sessionStorage.removeItem('authRedirect');
+                    $state.go(authRedirect.toState.name, authRedirect.toParams);
+                  }
+                  else {
+                    $state.go(authState);
+                  }
                 });
               });
             }]
@@ -710,11 +720,12 @@ angular.module('ngFormioHelper')
               };
 
               // Ensure they are logged.
-              $rootScope.$on('$stateChangeStart', function (event, toState) {
+              $rootScope.$on('$stateChangeStart', function (event, toState, toParams) {
                 $rootScope.authenticated = !!Formio.getToken();
                 if ($rootScope.authenticated) {
                   return;
                 }
+
                 if (allowedStates.length) {
                   var allowed = false;
                   for (var i in allowedStates) {
@@ -727,6 +738,9 @@ angular.module('ngFormioHelper')
                   if (allowed) {
                     return;
                   }
+
+                  // Save the state to sessionstorage so it can be redirected after login/register.
+                  window.sessionStorage.setItem('authRedirect', JSON.stringify({ toState: toState, toParams: toParams}));
 
                   event.preventDefault();
                   $state.go(anonState, {}, {reload: true});
