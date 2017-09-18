@@ -8,7 +8,7 @@ angular.module('ngFormBuilderHelper')
     FormioHelperConfig,
     $http
   ) {
-    $http.get(FormioHelperConfig.appUrl + '/role').then(function (result) {
+    $http.get(FormioHelperConfig.appUrl + '/role?limit=1000').then(function (result) {
       $scope.roles = result.data;
     });
   }

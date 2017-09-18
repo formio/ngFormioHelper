@@ -54,7 +54,7 @@ angular.module('ngFormBuilderHelper')
     else {
       // Load the roles available.
       if (!$scope.form.submissionAccess) {
-        Formio.makeStaticRequest(Formio.getAppUrl() + '/role').then(function(roles) {
+        Formio.makeStaticRequest(Formio.getAppUrl() + '/role?limit=1000').then(function(roles) {
           if ($scope.form.submissionAccess) {
             return;
           }
