@@ -1147,7 +1147,7 @@ angular.module('ngFormioHelper')
                   type: 'danger'
                 })
                 // We should check for authentication errors and redirect to login if unauthenticated and error.
-                $state.go('offline', {currentSubmission: submission});
+                $state.go('offline', {currentSubmission: submission.request});
               });
 
               // This section monitors for new application versions and will prompt to reload the page. Checks every minute on
