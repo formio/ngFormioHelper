@@ -30,7 +30,7 @@ angular.module('ngFormioHelper')
         anonRole = role;
       },
       setAppUrl: function(url) {
-        FormioProvider.setAppUrl(url);
+        FormioProvider.setProjectUrl(url);
       },
       register: function (name, resource, path, form, override) {
         var noOverride = form && !override;
