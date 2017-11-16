@@ -32,6 +32,9 @@ angular.module('ngFormioHelper')
       setAppUrl: function(url) {
         FormioProvider.setProjectUrl(url);
       },
+      setProjectUrl: function(url) {
+        FormioProvider.setProjectUrl(url);
+      },
       register: function (name, resource, path, form, override) {
         var noOverride = form && !override;
         if (!registered) {
