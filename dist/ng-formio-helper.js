@@ -455,7 +455,10 @@ angular.module('ngFormioHelper')
         anonRole = role;
       },
       setAppUrl: function(url) {
-        FormioProvider.setAppUrl(url);
+        FormioProvider.setProjectUrl(url);
+      },
+      setProjectUrl: function(url) {
+        FormioProvider.setProjectUrl(url);
       },
       register: function (name, resource, path, form, override) {
         var noOverride = form && !override;
@@ -524,7 +527,7 @@ angular.module('ngFormioHelper')
 
               // Load the project.
               $rootScope.projectRequest = function () {
-                return Formio.makeStaticRequest(Formio.getAppUrl()).then(function(project) {
+                return Formio.makeStaticRequest(Formio.getProjectUrl()).then(function(project) {
                   angular.forEach(project.access, function(access) {
                     formAccess[access.type] = access.roles;
                   });
@@ -537,7 +540,7 @@ angular.module('ngFormioHelper')
 
               // Get the access for this project.
               $rootScope.accessRequest = function () {
-                return Formio.makeStaticRequest(Formio.getAppUrl() + '/access').then(function(access) {
+                return Formio.makeStaticRequest(Formio.getProjectUrl() + '/access').then(function(access) {
                   angular.forEach(access.forms, function(form) {
                     submissionAccess[form.name] = {};
                     form.submissionAccess.forEach(function(access) {
