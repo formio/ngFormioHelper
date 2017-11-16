@@ -4,7 +4,12 @@ All notable changes to this project will be documented in this file
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## 1.4.5
+### Changed
+ - Rebuild dist directory.
+
 ## 1.4.4
+### Fixed
  - Fix deprecation warning around setAppUrl and getAppUrl.
 
 ## 1.4.3
