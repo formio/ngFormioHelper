@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## 1.4.6
+### Added
+ - When session expires, save state so redirected back to original page after login/register.
+
 ## 1.4.5
 ### Changed
  - Rebuild dist directory.
