@@ -1,6 +1,6 @@
 {
   "name": "ng-formio-helper",
-  "version": "1.4.6",
+  "version": "1.4.7",
   "description": "A library to help build Angular.js applications on top of Form.io.",
   "main": "index.js",
   "scripts": {
