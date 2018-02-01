@@ -268,7 +268,9 @@ angular.module('ngFormioHelper')
 
               var logoutError = function () {
                 // Save the state to sessionstorage so it can be redirected after login/register.
-                window.sessionStorage.setItem('authRedirect', JSON.stringify({ toState: $state.current, toParams: $stateParams}));
+                if ($state.current.name && !window.sessionStorage.getItem('authRedirect')) {
+                  window.sessionStorage.setItem('authRedirect', JSON.stringify({ toState: $state.current, toParams: $stateParams}));
+                }
 
                 $rootScope.setUser(null, null);
                 localStorage.removeItem('formioToken');
