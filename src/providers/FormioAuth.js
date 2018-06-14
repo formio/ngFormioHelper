@@ -13,6 +13,23 @@ angular.module('ngFormioHelper')
     var formAccess = {};
     var submissionAccess = {};
     var roles = {};
+    var setAuth = function(user, $rootScope, $state, $q) {
+      $q.all([$rootScope.projectRequest(), $rootScope.accessRequest()]).then(function() {
+        $rootScope.setUser(user, resource);
+
+        var authRedirect = window.sessionStorage.getItem('authRedirect');
+
+        if (authRedirect) {
+          authRedirect = JSON.parse(authRedirect);
+          window.sessionStorage.removeItem('authRedirect');
+          $state.go(authRedirect.toState.name, authRedirect.toParams);
+        }
+        else {
+          $state.go(authState);
+        }
+      });
+    };
+
     return {
       setForceAuth: function (allowed) {
         if (typeof allowed === 'boolean') {
@@ -42,7 +59,31 @@ angular.module('ngFormioHelper')
           $stateProvider.state('auth', {
             abstract: true,
             url: '/auth',
-            templateUrl: noOverride ? 'formio-helper/auth/auth.html' : 'views/user/auth.html'
+            templateUrl: noOverride ? 'formio-helper/auth/auth.html' : 'views/user/auth.html',
+            controller: [
+              '$scope',
+              '$state',
+              '$rootScope',
+              '$q',
+              function (
+                $scope,
+                $state,
+                $rootScope,
+                $q
+              ) {
+                if ($rootScope.sso) {
+                  $scope.authLoading = true;
+                  $rootScope.sso.then(function(currentUser) {
+                    $scope.authLoading = false;
+                    $scope.$apply();
+                    if (!currentUser) {
+                      return;
+                    }
+                    setAuth(currentUser, $rootScope, $state, $q);
+                  });
+                }
+              }
+            ]
           });
         }
 
@@ -54,29 +95,26 @@ angular.module('ngFormioHelper')
           .state('auth.' + name, {
             url: '/' + path,
             templateUrl: noOverride ? 'formio-helper/auth/' + tpl : 'views/user/' + tpl,
-            controller: ['$scope', '$state', '$rootScope', '$q', function ($scope, $state, $rootScope, $q) {
-              $scope.currentForm = form;
-              $scope.$on('formSubmission', function (err, submission) {
-                if (!submission) {
-                  return;
-                }
-
-                $q.all([$rootScope.projectRequest(), $rootScope.accessRequest()]).then(function() {
-                  $rootScope.setUser(submission, resource);
-
-                  var authRedirect = window.sessionStorage.getItem('authRedirect');
-
-                  if (authRedirect) {
-                    authRedirect = JSON.parse(authRedirect);
-                    window.sessionStorage.removeItem('authRedirect');
-                    $state.go(authRedirect.toState.name, authRedirect.toParams);
+            controller: [
+              '$scope',
+              '$state',
+              '$rootScope',
+              '$q',
+              function (
+                $scope,
+                $state,
+                $rootScope,
+                $q
+              ) {
+                $scope.currentForm = form;
+                $scope.$on('formSubmission', function (err, submission) {
+                  if (!submission) {
+                    return;
                   }
-                  else {
-                    $state.go(authState);
-                  }
+                  setAuth(submission, $rootScope, $state, $q);
                 });
-              });
-            }]
+              }
+            ]
           })
       },
       $get: [
@@ -97,8 +135,13 @@ angular.module('ngFormioHelper')
           $q
         ) {
           return {
-            init: function () {
+            init: function (options) {
               init = true;
+
+              if (options && options.oauth) {
+                // Initiate the SSO if they provide oauth settings.
+                $rootScope.sso = Formio.ssoInit(options.oauth.type, options.oauth.options);
+              }
 
               // Load the project.
               $rootScope.projectRequest = function () {
