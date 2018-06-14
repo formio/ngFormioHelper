@@ -438,7 +438,7 @@ angular.module('ngFormioHelper')
     var formAccess = {};
     var submissionAccess = {};
     var roles = {};
-    var setAuth = function(user, $rootScope, $state, $q) {
+    var setAuth = function(user, resource, $rootScope, $state, $q) {
       $q.all([$rootScope.projectRequest(), $rootScope.accessRequest()]).then(function() {
         $rootScope.setUser(user, resource);
 
@@ -504,7 +504,7 @@ angular.module('ngFormioHelper')
                     if (!currentUser) {
                       return;
                     }
-                    setAuth(currentUser, $rootScope, $state, $q);
+                    setAuth(currentUser, resource, $rootScope, $state, $q);
                   });
                 }
               }
@@ -536,7 +536,7 @@ angular.module('ngFormioHelper')
                   if (!submission) {
                     return;
                   }
-                  setAuth(submission, $rootScope, $state, $q);
+                  setAuth(submission, resource, $rootScope, $state, $q);
                 });
               }
             ]
