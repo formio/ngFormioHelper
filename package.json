@@ -1,6 +1,6 @@
 {
   "name": "ng-formio-helper",
-  "version": "1.8.0",
+  "version": "1.8.1",
   "description": "A library to help build Angular.js applications on top of Form.io.",
   "main": "index.js",
   "scripts": {
@@ -33,9 +33,9 @@
   "dependencies": {
     "angular-ui-router": "^0.4.2",
     "lodash": "^4.17.10",
-    "ng-formio": "^2.35.2",
-    "ng-formio-builder": "^2.35.2",
-    "ng-formio-grid": "^1.4.0"
+    "ng-formio": "^2.35.3",
+    "ng-formio-builder": "^2.35.3",
+    "ng-formio-grid": "^1.4.1"
   },
   "browserify": {
     "transform": [
