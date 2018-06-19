@@ -150,6 +150,11 @@ angular.module('ngFormioHelper')
 
               var currentAppRole = localStorage.getItem('formioAppRole') || 'user';
               if (options && options.oauth) {
+                // Make a fix to the hash to remove starting "/" that angular puts there.
+                if (window.location.hash && window.location.hash.match(/^#\/access_token/)) {
+                  history.pushState(null, null, window.location.hash.replace(/^#\/access_token/, '#access_token'));
+                }
+
                 // Initiate the SSO if they provide oauth settings.
                 $rootScope.userPromise = $rootScope.sso = Formio.ssoInit(options.oauth.type, options.oauth.options)
                   .then(function(user) {

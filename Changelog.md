@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## 1.8.2
+### Fixed
+ - The SSO to not require html5Mode(true)
+
 ## 1.8.0
 ### Fixed
  - Issues with the FormioAuth provider where it would call endpoints too early.
