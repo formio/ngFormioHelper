@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## 1.8.0
+### Fixed
+ - Issues with the FormioAuth provider where it would call endpoints too early.
+
+### Changed
+ - Upgraded all dependencies.
+
+### Added
+ - Support for OpenID Connect SSO
+
 ## 1.4.6
 ### Added
  - When session expires, save state so redirected back to original page after login/register.
