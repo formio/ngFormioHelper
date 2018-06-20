@@ -447,9 +447,13 @@ angular.module('ngFormioHelper')
           allowedStates = allowed;
         }
       },
-      setAuth: function(user, resource, $rootScope, $state, $q) {
-        $q.all([$rootScope.projectRequest(), $rootScope.accessRequest()]).then(function() {
-          $rootScope.setUser(user, resource);
+      auth: function(user, resource, $rootScope, $q) {
+        return $q.all([$rootScope.projectRequest(), $rootScope.accessRequest()]).then(function() {
+          return $rootScope.setUser(user, resource);
+        });
+      },
+      login: function(user, resource, $rootScope, $state, $q) {
+        return FormioAuth.auth(user, resource, $rootScope, $q).then(function(user) {
           var authRedirect = window.sessionStorage.getItem('authRedirect');
           if (authRedirect) {
             authRedirect = JSON.parse(authRedirect);
@@ -459,6 +463,7 @@ angular.module('ngFormioHelper')
           else {
             $state.go(authState);
           }
+          return user;
         });
       },
       setStates: function(anon, auth) {
@@ -508,7 +513,7 @@ angular.module('ngFormioHelper')
                 if (!submission) {
                   return;
                 }
-                FormioAuth.setAuth(submission, resource, $rootScope, $state, $q);
+                FormioAuth.login(submission, resource, $rootScope, $state, $q);
               });
             }
           ]
@@ -534,24 +539,22 @@ angular.module('ngFormioHelper')
           return {
             init: function (options) {
               init = true;
+              $rootScope.user = null;
+              $rootScope.isReady = false;
 
-              var projectDeferred = $q.defer();
+              // Load the current project.
               $rootScope.projectRequest = function () {
                 return Formio.makeStaticRequest(Formio.getProjectUrl()).then(function(project) {
                   angular.forEach(project.access, function(access) {
                     formAccess[access.type] = access.roles;
                   });
-                  projectDeferred.resolve(formAccess);
                 }, function(err) {
                   formAccess = {};
-                  projectDeferred.reject(err);
                   return null;
                 });
               };
-              $rootScope.projectPromise = projectDeferred.promise;
 
               // Get the access for this project.
-              var accessDeferred = $q.defer();
               $rootScope.accessRequest = function () {
                 return Formio.makeStaticRequest(Formio.getProjectUrl() + '/access').then(function(access) {
                   angular.forEach(access.forms, function(form) {
@@ -561,19 +564,14 @@ angular.module('ngFormioHelper')
                     });
                   });
                   roles = access.roles;
-                  accessDeferred.resolve(roles);
                   return access;
                 }, function(err) {
                   roles = {};
-                  accessDeferred.reject(err);
                   return null;
                 });
               };
-              $rootScope.accessPromise = accessDeferred.promise;
-              $rootScope.user = null;
-              $rootScope.isReady = false;
 
-              var currentAppRole = localStorage.getItem('formioAppRole') || 'user';
+              var currentUser = null;
               if (options && options.oauth) {
                 // Make a fix to the hash to remove starting "/" that angular puts there.
                 if (window.location.hash && window.location.hash.match(/^#\/access_token/)) {
@@ -581,29 +579,22 @@ angular.module('ngFormioHelper')
                 }
 
                 // Initiate the SSO if they provide oauth settings.
-                $rootScope.userPromise = $rootScope.sso = Formio.ssoInit(options.oauth.type, options.oauth.options)
-                  .then(function(user) {
-                    $rootScope.$apply();
-                    if (!user) {
-                      $rootScope.setUser(null, currentAppRole);
-                      return;
-                    }
-                    FormioAuth.setAuth(user, currentAppRole, $rootScope, $state, $q);
-                    return user;
-                  });
+                currentUser = Formio.ssoInit(options.oauth.type, options.oauth.options);
               }
               else {
-                $rootScope.userPromise = Formio.currentUser().then(function (user) {
-                  if (!user) {
-                    $rootScope.setUser(null, currentAppRole);
-                    return;
-                  }
-                  FormioAuth.setAuth(user, currentAppRole, $rootScope, $state, $q);
-                  return user;
-                });
+                currentUser = Formio.currentUser();
               }
 
-              // Return if the user has a specific role.
+              // Get the user promise when the user is done loading.
+              var currentAppRole = localStorage.getItem('formioAppRole') || 'user';
+              $rootScope.userPromise = currentUser.then(function(user) {
+                if (!user) {
+                  return $rootScope.setUser(null, currentAppRole);
+                }
+                return FormioAuth.auth(user, currentAppRole, $rootScope, $q);
+              });
+
+                // Return if the user has a specific role.
               $rootScope.hasRole = function(roleName) {
                 roleName = roleName.toLowerCase();
                 if (!$rootScope.user) {
@@ -642,8 +633,7 @@ angular.module('ngFormioHelper')
               };
 
               // Create a promise that loads when everything is ready.
-              $rootScope.whenReady = $rootScope.accessPromise.then($rootScope.userPromise).then(function() {
-                $rootScope.assignRoles();
+              $rootScope.whenReady = $rootScope.userPromise.then(function() {
                 $rootScope.isReady = true;
                 return true;
               });
@@ -679,6 +669,7 @@ angular.module('ngFormioHelper')
                   user: $rootScope.user,
                   role: $rootScope.role
                 });
+                return $rootScope.user;
               };
 
               $rootScope.checkAccess = function(access, permissions) {
