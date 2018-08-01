@@ -11,6 +11,7 @@ angular.module('ngFormioHelper')
       register: function (name, url, options) {
         options = options || {};
         resources[name] = options.title || name;
+        options.customId = options.customId || '';
         var parent = (options && options.parent) ? options.parent : null;
         var parents = (options && options.parents) ? options.parents : [];
         if ((!parents || !parents.length) && parent) {
@@ -162,7 +163,7 @@ angular.module('ngFormioHelper')
           }))
           .state(baseName, options.alter.abstract({
             abstract: true,
-            url: '/' + name + '/:' + queryId,
+            url: '/' + name + options.customId + '/:' + queryId,
             data: options.data && options.data.abstract,
             templateUrl: templates.abstract ? templates.abstract : 'formio-helper/resource/resource.html',
             ncyBreadcrumb: options.breadcrumb ? {label: options.breadcrumb.label} : {skip: true},
