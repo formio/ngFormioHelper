@@ -6,6 +6,7 @@ angular.module('ngFormioHelper')
     return {
       register: function (name, url, options) {
         options = options || {};
+        options.customId = options.customId || '';
         var templates = options.templates ? options.templates : {};
         var controllers = options.controllers ? options.controllers : {};
         var fields = (typeof options.field === 'string') ? [options.field] : options.field;
@@ -41,7 +42,7 @@ angular.module('ngFormioHelper')
             }]
           })
           .state(basePath + 'form', {
-            url: '/form/:formId',
+            url: '/form' + options.customId + '/:formId',
             abstract: true,
             ncyBreadcrumb: _.get(options, 'breadcrumb.form', {skip: true}),
             templateUrl: templates.form ? templates.form : 'formio-helper/form/form.html',
