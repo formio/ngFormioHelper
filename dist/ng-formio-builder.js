@@ -255,6 +255,9 @@ angular.module('ngFormBuilderHelper')
       if (!$scope.form.name || $scope.form.name === _.camelCase(oldTitle)) {
         $scope.form.name = _.camelCase($scope.form.title);
       }
+      if (!$scope.form.path || $scope.form.path === _.camelCase(oldTitle).toLowerCase()) {
+        $scope.form.path = _.camelCase($scope.form.title).toLowerCase();
+      }
       if ($scope.$parent && $scope.$parent.form) {
         $scope.$parent.form.title = $scope.form.title;
       }
@@ -531,7 +534,6 @@ angular.module('ngFormBuilderHelper')
 
 angular.module('ngFormBuilderHelper', [
   'formio',
-  'ngFormBuilder',
   'ngFormioGrid',
   'ngFormioHelper',
   'ngTagsInput',
@@ -650,7 +652,7 @@ angular.module('ngFormBuilderHelper', [
     );
 
     $templateCache.put('formio-helper/formbuilder/submission/view.html',
-      "<formio-submission form=\"form\" submission=\"submission\" read-only=\"true\"></formio-submission>\n"
+      "<formio form=\"form\" submission=\"submission\" read-only=\"true\"></formio>\n\n"
     );
   }
 ]);
