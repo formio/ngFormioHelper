@@ -49,7 +49,7 @@ angular.module('ngFormBuilderHelper')
     var getActionInfo = function(name) {
       return $scope.formio.actionInfo(name).then(function(actionInfo) {
         if(actionInfo) {
-          $scope.actionInfo = _.merge($scope.actionInfo, actionInfo);
+          $scope.actionInfo = angular.copy(_.merge($scope.actionInfo, actionInfo));
           return $scope.actionInfo;
         }
       });
@@ -117,12 +117,12 @@ angular.module('ngFormBuilderHelper')
         $scope.actionUrl = $scope.formio.formUrl + '/action/' + $stateParams.actionId;
         var loader = new Formio($scope.actionUrl);
         return loader.loadAction().then(function(action) {
-          $scope.action = _.merge($scope.action, {data: action});
+          $scope.action = angular.copy(_.merge($scope.action, {data: action}));
           return getActionInfo(action.name);
         });
       }
       else {
-        $scope.action = _.merge($scope.action, {data: defaults});
+        $scope.action = angular.copy(_.merge($scope.action, {data: defaults}));
         $scope.action.data.settings = {};
         return $q.when($scope.actionInfo);
       }
