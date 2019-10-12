@@ -21,6 +21,7 @@ angular.module('ngFormBuilderHelper')
     $scope.action = {data: {settings: {}, condition: {}}};
     $scope.newAction = {name: '', title: 'Select an Action'};
     $scope.availableActions = {};
+    Formio.clearCache();
     $scope.addAction = function() {
       if ($scope.newAction.name) {
         $state.go($scope.basePath + 'form.action.add', {
@@ -118,7 +119,9 @@ angular.module('ngFormBuilderHelper')
         var loader = new Formio($scope.actionUrl);
         return loader.loadAction().then(function(action) {
           $scope.action = angular.copy(_.merge($scope.action, {data: action}));
-          return getActionInfo(action.name);
+          return getActionInfo(action.name).then(function(actionInfo) {
+            $scope.actionInfo.settingsForm.action = $scope.actionUrl;
+          });
         });
       }
       else {
