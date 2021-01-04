@@ -29,15 +29,24 @@ angular.module('ngFormioHelper')
         return tempAlerts;
       },
       onError: function showError(error) {
-        if (error.message) {
+        let currentError;
+        if (typeof error === 'string') {
+          try {
+            currentError = JSON.parse(error);
+          } catch (err) {
+            currentError = error;
+          }
+        }
+
+        if (currentError.message) {
           this.addAlert({
             type: 'danger',
-            message: error.message,
-            element: error.path
+            message: currentError.message,
+            element: currentError.path
           });
         }
         else {
-          var errors = error.hasOwnProperty('errors') ? error.errors : error.data.errors;
+          var errors = currentError.hasOwnProperty('errors') ? currentError.errors : currentError.data.errors;
           angular.forEach(errors, showError.bind(this));
         }
       }
