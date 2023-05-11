@@ -1,3 +1,13 @@
+## This repository is now considered legacy and no longer supported. It is now part of our core renderer @ https://github.com/formio/formio.js as well as our Angular library @ https://github.com/formio/angular.
+
+## Please take a look at our recent repositories and help documentation at the following links.
+ - https://help.form.io
+ - https://github.com/formio/formio.js
+ - https://github.com/formio/formio
+ - https://github.com/formio/react
+ - https://github.com/formio/angular
+ - https://github.com/formio/vue
+
 This is a helper module to build Angular.js applications on top of Form.io
 ===============
 Use this helper if you would like to build an Angular.js 1.x application that utilizes Form.io to build an application.
